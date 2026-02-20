@@ -41,7 +41,7 @@ class ValidateDeckController < ApplicationController
 
     v = DeckValidator.new(deck)
 
-    out[:attributes][:is_valid] = v.is_valid?
+    out[:attributes][:is_valid] = v.valid
     out[:attributes][:validation_errors] = v.errors
     out[:attributes][:validations] = v.validations
 
