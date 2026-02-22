@@ -15,7 +15,7 @@ gem 'rails', '~> 7'
 gem 'pg', '~> 1.1'
 
 # Use the Puma web server [https://github.com/puma/puma]
-gem 'puma', '~> 6.4'
+gem 'puma'
 
 gem 'parslet'
 
@@ -58,8 +58,7 @@ group :development, :test do
   # Lock to 8.0.3 because we don't have CSP middleware and the next version crashes without it.
   gem 'bullet', '8.0.3'
   gem 'bundler-audit', '~> 0.9.0'
-  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem 'debug', platforms: %i[mri mingw x64_mingw]
+  gem 'debug'
   gem 'factory_bot_rails'
   gem 'faker'
   gem 'graphiti_spec_helpers'

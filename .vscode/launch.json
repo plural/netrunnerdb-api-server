@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "ruby_lsp",
+            "name": "Launch Server (debug)",
+            "request": "launch",
+            "program": "bundle exec rdbg -O -n -c -- bin/rails server --no-log-to-stdout",
+        },
+        {
+            "type": "ruby_lsp",
+            "name": "Attach debugger",
+            "request": "attach"
+        },
+        // This will prompt for a rake task name and attach a debugger to it.
+        {
+            "type": "ruby_lsp",
+            "name": "Rake Task",
+            "request": "launch",
+            "program": "bundle exec rake ${input:rakeTaskName}",
+        },
+    ],
+    "inputs": [
+        {
+            "id": "rakeTaskName",
+            "type": "promptString",
+            "description": "Enter rake task name",
+            "default": ""
+        }
+    ]
+}
