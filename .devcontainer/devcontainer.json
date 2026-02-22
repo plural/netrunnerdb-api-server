@@ -5,7 +5,8 @@
     "dockerComposeFile": "docker-compose.yml",
     "service": "app",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-    // Features to add to the dev container. More info: https://containers.dev/features.
+    // Features to add to the
+    //  dev container. More info: https://containers.dev/features.
     "features": {
         "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
             "packages": "libpq-dev, libvips, postgresql-client" // For postgres tooling
@@ -17,7 +18,7 @@
             "version": "3.4.4" // Change to match Ruby version from Gemfile
         },
         "ghcr.io/devcontainers/features/node:1": {
-            "version": 19 // Change Node version as required
+            "version": 20 // Change Node version as required
         },
         "ghcr.io/devcontainers/features/common-utils:2.4.3": {
             "username": "vscode",
@@ -36,10 +37,40 @@
         "vscode": {
             // Set *default* container specific settings.json values on container create.
             "settings": {
-                "workbench.iconTheme": "vscode-icons",
+                "editor.formatOnSave": false,
                 "emmet.includeLanguages": {
                     "erb": "html"
                 },
+                "rubocop.yjitEnabled": false,
+                "rubyLsp.enabledFeatures": {
+                    "codeActions": true,
+                    "codeLens": true,
+                    "completion": true,
+                    "definition": true,
+                    "diagnostics": true,
+                    "documentHighlights": true,
+                    "documentLink": true,
+                    "documentSymbols": true,
+                    "foldingRanges": true,
+                    "formatting": true,
+                    "hover": true,
+                    "inlayHint": true,
+                    "onTypeFormatting": true,
+                    "selectionRanges": true,
+                    "semanticHighlighting": true,
+                    "signatureHelp": true,
+                    "typeHierarchy": true,
+                    "workspaceSymbol": true
+                },
+                "rubyLsp.featuresConfiguration": {},
+                "rubyLsp.formatter": "auto",
+                "rubyLsp.rubyVersionManager": {
+                    "identifier": "auto"
+                },
+                "rubyLsp.rubyExecutablePath": "bundle exec ruby",
+                "rubyLsp.useBundler": true,
+                "rubyTestExplorer.debugCommand": "bundle exec rdebug-ide",
+                "rubyTestExplorer.testFramework": "rspec",
                 "sqltools.connections": [
                     {
                         "name": "Rails Development Database",
@@ -64,27 +95,32 @@
                         "password": "postgres"
                     }
                 ],
-                "ruby.format": "rubocop",
-                "rubocop.yjitEnabled": false,
-                "editor.formatOnSave": false
+                "workbench.iconTheme": "vscode-icons",
+                "[ruby]": {
+                    "editor.defaultFormatter": "Shopify.ruby-lsp", // Use the Ruby LSP as the default formatter
+                    "editor.formatOnSave": true, // Format files automatically when saving
+                    "editor.tabSize": 2, // Use 2 spaces for indentation
+                    "editor.insertSpaces": true, // Use spaces and not tabs for indentation
+                    "editor.semanticHighlighting.enabled": true, // Enable semantic highlighting
+                    "editor.formatOnType": true // Enable formatting while typing
+                }
             },
             "extensions": [
-                "IBM.output-colorizer",
                 "aki77.rails-db-schema",
                 "bung87.rails",
                 "bung87.vscode-gemfile",
-                "connorshea.vscode-ruby-test-adapter",
-                "eamodio.gitlens",
+                "github.vscode-github-actions",
                 "hbenl.vscode-test-explorer",
+                "IBM.output-colorizer",
                 "iliazeus.vscode-ansi",
                 "manuelpuyol.erb-linter",
                 "ms-azuretools.vscode-docker",
-                "mtxr.sqltools",
                 "mtxr.sqltools-driver-pg",
-                "rubocop.vscode-rubocop",
+                "mtxr.sqltools",
+                "ruby-slim.tmbundle",
+                "Shopify.ruby-lsp",
                 "vscode-icons-team.vscode-icons",
-                "waderyan.gitblame",
-                "github.vscode-github-actions"
+                "waderyan.gitblame"
             ]
         }
     },
