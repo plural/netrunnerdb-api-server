@@ -216,7 +216,9 @@ class SearchQueryBuilder # rubocop:disable Metrics/ClassLength
     FieldData.new(:string, both('stripped_text'), %w[text x],
                   'The text of a card, stripped of all formatting symbols and marks.'),
     FieldData.new(:string, both('stripped_title'), %w[title _],
-                  'The title of a card, stripped of all formatting symbols and marks.')
+                  'The title of a card, stripped of all formatting symbols and marks.'),
+    FieldData.new(:string, both('id'), %w[id],
+                  'The string id for this type.')
   ]
   # rubocop:enable Layout/LineLength
   def self.search_filter_docs
@@ -324,7 +326,7 @@ class SearchQueryBuilder # rubocop:disable Metrics/ClassLength
     end
 
     # Generate SQL query and parameters from AST
-    # This has the side effect of adding the SQL parameters to @where_values
+    # This has the side effect of adding the SQL parameters to @whereues
     @where_values = []
     # TODO(plural): Capture any exceptions in here and return them as well formatted errors.
     @where = transform.apply(@parse_tree).construct_clause(@where_values, fields)
@@ -462,7 +464,7 @@ class SearchQueryBuilder # rubocop:disable Metrics/ClassLength
 
       # Booleans
       when :boolean
-        unless %w[true false t f 1 0].include?(value)
+        unless %w[true false t f 1 0 any].include?(value)
           raise format('Invalid value "%<value>s" for boolean field "%<field>s"', value:, field: context.keyword)
         end
 
