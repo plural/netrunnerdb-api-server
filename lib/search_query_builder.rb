@@ -467,6 +467,7 @@ class SearchQueryBuilder # rubocop:disable Metrics/ClassLength
         unless %w[true false t f 1 0 any].include?(value)
           raise format('Invalid value "%<value>s" for boolean field "%<field>s"', value:, field: context.keyword)
         end
+
         parameters << value
         format('%<sql>s %<operator>s ?', sql: context.field.sql, operator: sql_operator)
 
