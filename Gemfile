@@ -73,6 +73,7 @@ group :development, :test do
   gem 'ruby-lsp-rspec', require: false
   gem 'simplecov'
   gem 'simplecov-cobertura'
+  gem 'sqlite3', '~> 2.9'
 end
 
 group :development do
