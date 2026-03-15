@@ -13,7 +13,7 @@ RSpec.describe SearchParser do
     end
 
     it 'fails with non-keyword' do
-      inputs = %w(... 1)
+      inputs = %w[... 1]
       parser = described_class.new.keyword
       inputs.each do |i|
         expect do
@@ -25,7 +25,7 @@ RSpec.describe SearchParser do
 
   describe '#operator' do
     it 'parses an operator' do
-      operators = %w(: ! > < <= >=)
+      operators = %w[: ! > < <= >=]
       parser = described_class.new.operator
       operators.each do |o|
         tree = parser.parse_with_debug(o)
