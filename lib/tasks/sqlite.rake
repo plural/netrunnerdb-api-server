@@ -1,123 +1,250 @@
+# frozen_string_literal: true
+
 namespace :sqlite do
-  desc 'Create a sqlite3 database for the specified tables'
+  desc 'Create a sqlite3 database for configured tables.'
   task create: :environment do
     require 'sqlite3'
+    require 'json'
+    require 'zlib'
+
+    target_models = [
+      Card,
+      CardCycle,
+      CardPool,
+      CardPoolCardCycle,
+      CardPoolCardSet,
+      CardSet,
+      CardSetType,
+      CardSubtype,
+      CardType,
+      Faction,
+      Format,
+      Illustrator,
+      Printing,
+      Restriction,
+      RestrictionCardBanned,
+      RestrictionCardGlobalPenalty,
+      RestrictionCardPoints,
+      RestrictionCardRestricted,
+      RestrictionCardSubtypeBanned,
+      RestrictionCardUniversalFactionCost,
+      Side,
+      Snapshot
+    ]
+
+    puts 'Loading model table definitions and data from Postgres...'
+    schema_definitions = {}
+    data_cache = {}
+
+    target_models.each do |model|
+      # Parse schema definitions
+      schema_definitions[model] = model.columns.map do |col|
+        type = col.type
+        options = {
+          limit: col.limit,
+          precision: col.precision,
+          scale: col.scale,
+          default: col.default,
+          null: col.null
+        }
+
+        if col.respond_to?(:array) && col.array
+          type = :text
+          options[:limit] = nil
+          options[:precision] = nil
+          options[:scale] = nil
+        end
+
+        {
+          name: col.name,
+          type: type,
+          options: options
+        }
+      end
+
+      data_cache[model] = model.all.map(&:attributes)
+      puts "Loaded #{data_cache[model].size} records for #{model.name}"
+    end
 
     db_file = Rails.root.join('db', 'netrunnerdb.sqlite3')
     File.delete(db_file) if File.exist?(db_file)
 
-    # Establish connection to the new SQLite database
-    sqlite_db = SQLite3::Database.new(db_file.to_s)
+    puts "Creating tables in SQLite db at #{db_file}..."
+    ActiveRecord::Base.establish_connection(
+      adapter: 'sqlite3',
+      database: db_file.to_s
+    )
+    connection = ActiveRecord::Base.connection
 
-    puts "Creating tables in #{db_file}..."
-
-    # sides
-    sqlite_db.execute <<-SQL
-      CREATE TABLE sides (
-        id text PRIMARY KEY,
-        name text NOT NULL,
-        created_at datetime NOT NULL,
-        updated_at datetime NOT NULL
-      );
-    SQL
-
-    # factions
-    sqlite_db.execute <<-SQL
-      CREATE TABLE factions (
-        id text PRIMARY KEY,
-        is_mini boolean NOT NULL,
-        name text NOT NULL,
-        side_id text NOT NULL,
-        created_at datetime NOT NULL,
-        updated_at datetime NOT NULL,
-        description varchar
-      );
-    SQL
-
-    # card_cycles
-    sqlite_db.execute <<-SQL
-      CREATE TABLE card_cycles (
-        id text PRIMARY KEY,
-        name text NOT NULL,
-        description text,
-        created_at datetime NOT NULL,
-        updated_at datetime NOT NULL,
-        date_release date,
-        legacy_code varchar,
-        released_by varchar,
-        position integer
-      );
-    SQL
-
-    # card_sets
-    sqlite_db.execute <<-SQL
-      CREATE TABLE card_sets (
-        id text PRIMARY KEY,
-        name text NOT NULL,
-        date_release date,
-        size integer,
-        card_cycle_id text,
-        card_set_type_id text,
-        position integer,
-        created_at datetime NOT NULL,
-        updated_at datetime NOT NULL,
-        legacy_code varchar,
-        released_by varchar
-      );
-    SQL
-
-    # card_types
-    sqlite_db.execute <<-SQL
-      CREATE TABLE card_types (
-        id text PRIMARY KEY,
-        name text NOT NULL,
-        created_at datetime NOT NULL,
-        updated_at datetime NOT NULL,
-        side_id varchar
-      );
-    SQL
-
-    # card_subtypes
-    sqlite_db.execute <<-SQL
-      CREATE TABLE card_subtypes (
-        id text PRIMARY KEY,
-        name text NOT NULL,
-        created_at datetime NOT NULL,
-        updated_at datetime NOT NULL
-      );
-    SQL
-
-    puts 'Copying data...'
-
-    # Copy data
-    [Side, Faction, CardCycle, CardSet, CardType, CardSubtype].each do |model|
-      puts "Copying #{model.name}..."
+    puts 'Creating tables...'
+    target_models.each do |model|
       table_name = model.table_name
-      columns = model.column_names
-      column_list = columns.join(', ')
-      placeholders = (['?'] * columns.size).join(', ')
+      columns = schema_definitions[model]
+      primary_key = model.primary_key
 
-      insert_sql = "INSERT INTO #{table_name} (#{column_list}) VALUES (#{placeholders})"
-
-      model.find_each do |record|
-        values = columns.map { |col| record[col] }
-        # Convert values for sqlite
-        values = values.map do |v|
-          if v == true
-            1
-          elsif v == false
-            0
-          elsif v.respond_to?(:iso8601)
-            v.iso8601
-          else
-            v
-          end
+      puts "Creating table #{table_name}..."
+      connection.create_table(table_name, id: false, force: true) do |t|
+        columns.each do |col_def|
+          options = col_def[:options]
+          options[:primary_key] = true if col_def[:name] == primary_key
+          t.column col_def[:name], col_def[:type], **options
         end
-
-        sqlite_db.execute(insert_sql, values)
       end
     end
 
+    puts 'Inserting data into SQLite db...'
+    target_models.each do |model|
+      rows = data_cache[model]
+      next if rows.empty?
+
+      # Convert array values to JSON strings for SQLite compatibility
+      rows.each do |row|
+        row.each do |key, value|
+          row[key] = value.to_json if value.is_a?(Array)
+        end
+      end
+
+      # Force a reload of backing model information to force using new SQLite schema.
+      model.reset_column_information
+      puts "  Inserting #{rows.size} records into #{model.table_name}..."
+      rows.each_slice(100) { |batch| model.insert_all(batch) } # rubocop:disable Rails/SkipsModelValidations
+    end
+
+    puts 'Verifying data...'
+    target_models.each do |model|
+      puts "  Verifying #{model.name}..."
+      original_records = data_cache[model]
+
+      if model.primary_key
+        verify_by_primary_key(original_records, model)
+      else
+        verify_without_primary_key(original_records, model)
+      end
+    end
+
+    compress_db(db_file)
+
     puts 'Done.'
+  end
+
+  def verify_by_primary_key(original_records, model)
+    original_records.each do |original_attrs|
+      pk = model.primary_key
+      id = original_attrs[pk]
+
+      # Reload explicitly from the new connection
+      sqlite_record = model.find_by(pk => id)
+
+      unless sqlite_record
+        puts "MISSING RECORD: #{model.name} #{id}"
+        next
+      end
+
+      original_attrs.each do |col, original_val|
+        sqlite_val = sqlite_record[col]
+
+        # Simple normalization for comparison
+        match = if original_val.is_a?(Time) && sqlite_val.is_a?(Time)
+                  # Compare up to seconds to allow for precision loss
+                  original_val.to_i == sqlite_val.to_i
+                else
+                  lhs = original_val
+                  rhs = sqlite_val
+
+                  # Handle Array comparison (Postgres Array vs SQLite JSON/String)
+                  if lhs.is_a?(Array)
+                    rhs = begin
+                      JSON.parse(rhs)
+                    rescue StandardError
+                      rhs
+                    end
+
+                    # Sort values first if both are arrays
+                    if rhs.is_a?(Array)
+                      lhs = lhs.sort
+                      rhs = rhs.sort
+                    end
+                  end
+
+                  lhs == rhs
+                end
+
+        unless match
+          puts "MISMATCH: #{model.name} #{id} [#{col}] - PG: #{original_val.inspect} vs SQL: #{sqlite_val.inspect}"
+        end
+      end
+    end
+  end
+
+  def verify_without_primary_key(original_records, model)
+    # Verification without Primary Key (Full Table Sort & Compare)
+    puts "    No primary key for #{model.name}, performing full table comparison..."
+
+    # Helper to normalize records for comparison
+    normalize_for_sort = lambda do |record|
+      # Transform hash values for consistent sorting
+      record.transform_values do |val|
+        case val
+        when Time
+          val.to_i
+        when String
+          if val.strip.start_with?('[')
+            begin
+              JSON.parse(val)
+            rescue StandardError
+              val
+            end
+          else
+            val
+          end
+        when Array
+          val.sort
+        else
+          val
+        end
+      end
+    end
+
+    # Capture SQLite records
+    sqlite_records = model.all.map(&:attributes)
+
+    if original_records.size != sqlite_records.size
+      puts "COUNT MISMATCH: PG: #{original_records.size} vs SQL: #{sqlite_records.size}"
+    end
+
+    # Sort key generator: use JSON representation to ensure deterministic order
+    sort_key_gen = ->(r) { r.sort.to_h.to_json }
+
+    normalized_original = original_records.map(&normalize_for_sort).sort_by(&sort_key_gen)
+    normalized_sqlite = sqlite_records.map(&normalize_for_sort).sort_by(&sort_key_gen)
+
+    normalized_original.each_with_index do |orig_record, idx|
+      sqlite_record = normalized_sqlite[idx]
+
+      next unless orig_record != sqlite_record
+
+      puts "    MISMATCH at sorted index #{idx}:"
+      puts "      PG: #{orig_record.inspect}"
+      puts "      SQL: #{sqlite_record.inspect}"
+
+      orig_record.each do |k, v|
+        puts "    Diff [#{k}]: #{v.inspect} != #{sqlite_record[k].inspect}" if sqlite_record[k] != v
+      end
+    end
+  end
+
+  def compress_db(db_file)
+    puts 'Compressing database...'
+    timestamp = Time.now.to_i
+    gzip_path = "#{db_file}.#{timestamp}.gz"
+
+    Zlib::GzipWriter.open(gzip_path) do |gz|
+      File.open(db_file.to_s, 'rb') do |file|
+        while (chunk = file.read(1024 * 1024))
+          gz.write(chunk)
+        end
+      end
+    end
+    puts "Database compressed to #{gzip_path}"
   end
 end
