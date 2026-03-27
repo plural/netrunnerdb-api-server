@@ -398,11 +398,11 @@ class DeckValidator # rubocop:disable Metrics/ClassLength
     else
       @deck['cards']
         .select do |card_id|
-          @cards[card_id].card_type_id == 'agenda' and ![@identity.faction_id,
-                                                         'neutral_corp'].include?(@cards[card_id].faction_id)
+        @cards[card_id].card_type_id == 'agenda' and ![@identity.faction_id,
+                                                       'neutral_corp'].include?(@cards[card_id].faction_id)
       end # rubocop:disable Style/MultilineBlockChain
         .each_key do |card_id|
-          local_errors << "Agenda `#{card_id}` with faction_id `#{@cards[card_id].faction_id}` is not allowed in a `#{@identity.faction_id}` deck." # rubocop:disable Layout/LineLength
+        local_errors << "Agenda `#{card_id}` with faction_id `#{@cards[card_id].faction_id}` is not allowed in a `#{@identity.faction_id}` deck." # rubocop:disable Layout/LineLength
       end
     end
 
