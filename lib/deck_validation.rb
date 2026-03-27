@@ -3,6 +3,7 @@
 # A class to hold specifications and results from validations.
 class DeckValidation
   attr_reader :basic_deckbuilding_rules, :label, :errors, :format_id, :restriction_id, :card_pool_id, :snapshot_id
+  attr_accessor :eternal_points
 
   def initialize(validation_hash)
     @label = nil
@@ -19,6 +20,7 @@ class DeckValidation
     @card_pool_id = validation_hash['card_pool_id'] if validation_hash.key?('card_pool_id')
     @snapshot_id = nil
     @snapshot_id = validation_hash['snapshot_id'] if validation_hash.key?('snapshot_id')
+    @eternal_points = nil
 
     expand_implied_ids
 

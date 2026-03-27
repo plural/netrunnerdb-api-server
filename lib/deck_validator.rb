@@ -139,6 +139,8 @@ class DeckValidator # rubocop:disable Metrics/ClassLength
               @validation_errors = true
             end
 
+            v.eternal_points = eternal_points if v.format_id == 'eternal'
+
             # Check for universal faction cost.
             # Each copy of a card with a universal faction cost has
             # the universal faction cost added to its influence cost.
