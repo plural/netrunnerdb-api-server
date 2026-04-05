@@ -99,7 +99,7 @@ class SearchQueryBuilder # rubocop:disable Metrics/ClassLength
                   '`card_subtype_id`s for the card.'),
     FieldData.new(:array, both('restrictions_points'), ['eternal_points'],
                   'Concatenation of `restriction_id` and an Eternal Points value, joined by a hyphen, like `eternal_points:eternal_points_list_22_09-2`.'),
-    FieldData.new(:array, both('format_ids'), ['format'],
+    FieldData.new(:array, both('format_ids'), ['format_id'],
                   '`format_id` for any format containing the card at any time.'),
     FieldData.new(:array, both('restrictions_global_penalty'), ['has_global_penalty'],
                   '`restriction_id` restricting the card with a global penalty, like `has_global_penalty:napd_mwl_1_1`.'),
@@ -159,6 +159,8 @@ class SearchQueryBuilder # rubocop:disable Metrics/ClassLength
                   'Does the card provide a trash ability?'),
     FieldData.new(:date, both('date_release'), %w[release_date date_release r],
                   'The earliest release date for a card or the release date for the set for a printing.'),
+    FieldData.new(:format, both('ignored_placeholder'), %w[format],
+                  'Format.  When specifying a named format, this will expand to cover the latest snapshot for that format including card pool and restriction, with any banned cards removed.'),
     FieldData.new(:integer, both('advancement_requirement'), %w[advancement_cost g],
                   'The `advancement_cost` value for an agenda. Accepts positive integers and X (case-insensitive).'),
     FieldData.new(:integer, both('agenda_points'), %w[agenda_points v],
@@ -248,6 +250,9 @@ class SearchQueryBuilder # rubocop:disable Metrics/ClassLength
       '<=' => '<=',
       '>' => '>',
       '>=' => '>='
+    },
+    format: {
+      ':' => 'FORMAT'
     },
     integer: {
       ':' => '=',
@@ -487,6 +492,20 @@ class SearchQueryBuilder # rubocop:disable Metrics/ClassLength
         parameters << value
         format('%<sql>s %<operator>s ?', sql: context.field.sql, operator: sql_operator)
 
+      when :format
+        if sql_operator == 'FORMAT'
+          format_id = value.downcase
+          force_latest = format_id.end_with?('-latest')
+          format_id.sub!(/-latest\z/, '') if format_id.end_with?('-latest')
+          parameters << format_id
+          parameters << format_id
+          # Add subqueries to include cards in the card pool for the appropriate snapshot for that format,
+          # and to exclude cards banned in that snapshot.
+          format('(SELECT id FROM snapshots WHERE format_id = ? %<filter>s) = ANY(snapshot_ids) ' \
+                 'AND NOT (' \
+                 'SELECT restriction_id FROM snapshots WHERE format_id = ? %<filter>s) = ANY(restrictions_banned)',
+                 filter: force_latest ? 'ORDER BY date_start DESC LIMIT 1' : 'AND active')
+        end
       # Integers
       when :integer
         unless value.match?(/\A(\d+|x)\Z/i)
