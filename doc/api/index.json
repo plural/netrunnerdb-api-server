@@ -201,6 +201,13 @@
           "method": "get"
         },
         {
+          "description": "Filter - Get decklists excluding all supplied Card ids",
+          "link": "decklists/filter_-_get_decklists_excluding_all_supplied_card_ids.json",
+          "groups": "all",
+          "route": "/api/v3/public/decklists?filter[exclude_card_id]=pennyshaver,stargate",
+          "method": "get"
+        },
+        {
           "description": "Filter - Get decklists with a particular Identity",
           "link": "decklists/filter_-_get_decklists_with_a_particular_identity.json",
           "groups": "all",

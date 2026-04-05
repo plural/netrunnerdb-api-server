@@ -63,7 +63,7 @@ class SearchQueryBuilder # rubocop:disable Metrics/ClassLength
 
     #### Field Types and Operators
 
-    There are 5 types of fields in the Search Filter:
+    There are 6 types of fields in the Search Filter:
 
     * **Array** - supports the `:` (an element in the array is an exact match) and `!` (an element in the array is not an exact match) operators.
       * `card_pool_ids:eternal|snapshot` returns all cards in the eternal or snapshot card pools.
@@ -72,6 +72,7 @@ class SearchQueryBuilder # rubocop:disable Metrics/ClassLength
       * `advanceable:true`, `advanceable:t`, and `advanceable:1` will all return all results where advanceable is true.
     * **Date** - supports the `:` (match),  `!` (negated match), `<`, `<=`, `>`, and `>=` operators.  Requires date in `YYYY-MM-DD` format.
       * `release_date<=2020-01-01` will return everything with a release date less than or equal to New Year's Day, 2020.
+    * **Format** - only supports exact match `:` operator and only used for the `format` operand.
     * **Integer** - supports the `:` (match),  `!` (negated match), `<`, `<=`, `>`, and `>=` operators.  Requires simple integer input.
       * For cards that have an X value, you can match with X, like `cost:X` (case insensitive).  an X value is treated as -1 behind the scenes.
     * **String** - supports the `:` (LIKE) and `!` (NOT LIKE) operators. Input is transformed to lower case and the `%` decorations are added automatically, turning a query like `title:street` into a SQL fragment like `LOWER(stripped_title) LIKE '%street%`.
