@@ -251,6 +251,16 @@ RSpec.describe CardSearchQueryBuilder do
       end
     end
 
+    context 'with format_id' do
+      let(:builder) { described_class.new('format_id:best_format') }
+
+      it 'builds correct where clause' do
+        expect(builder.where.strip).to eq('(? = ANY(unified_cards.format_ids))')
+        expect(builder.where_values).to eq(['best_format'])
+        expect(builder.left_joins).to eq([])
+      end
+    end
+
     context 'with bad boolean value' do
       it 'raises error for invalid boolean value' do
         expect do
@@ -264,6 +274,45 @@ RSpec.describe CardSearchQueryBuilder do
         expect do
           described_class.new('trash_cost:"too damn high"')
         end.to raise_error(RuntimeError, 'Invalid value "too damn high" for integer field "trash_cost"')
+      end
+    end
+
+    context 'with bad format operator' do
+      it 'raises error for invalid format operator' do
+        expect do
+          described_class.new('format!standard')
+        end.to raise_error(RuntimeError, 'Invalid format operator "!"')
+      end
+    end
+
+    context 'with standard format' do
+      let(:builder) { described_class.new('format:standard') }
+
+      it 'builds correct where clause' do
+        expect(builder.where.strip).to eq(
+          '(SELECT id FROM snapshots WHERE format_id = ? AND active) = ANY(snapshot_ids) ' \
+          'AND NOT (' \
+          'SELECT restriction_id FROM snapshots WHERE format_id = ? AND active) '\
+          '= ANY(restrictions_banned)'
+        )
+        expect(builder.where_values).to eq(%w[standard standard])
+        expect(builder.left_joins).to eq([])
+      end
+    end
+
+    context 'with lastest startup format' do
+      let(:builder) { described_class.new('format:startup-latest') }
+
+      it 'builds correct where clause' do
+        expect(builder.where.strip).to eq(
+          '(SELECT id FROM snapshots WHERE format_id = ? ORDER BY date_start DESC LIMIT 1) '\
+          '= ANY(snapshot_ids) ' \
+          'AND NOT (' \
+          'SELECT restriction_id FROM snapshots WHERE format_id = ? ORDER BY date_start DESC LIMIT 1) '\
+          '= ANY(restrictions_banned)'
+        )
+        expect(builder.where_values).to eq(%w[startup startup])
+        expect(builder.left_joins).to eq([])
       end
     end
   end
