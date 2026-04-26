@@ -9,7 +9,7 @@ ruby '~> 3.4.4'
 gem 'google-protobuf', force_ruby_platform: true
 gem 'nokogiri', force_ruby_platform: true
 
-gem 'rails', '~> 7'
+gem 'rails', '~> 8'
 
 # Use postgresql as the database for Active Record
 gem 'pg', '~> 1.1'
@@ -56,8 +56,8 @@ gem 'reverse_markdown'
 group :development, :test do
   gem 'brakeman'
   # Lock to 8.0.3 because we don't have CSP middleware and the next version crashes without it.
-  gem 'bullet', '8.0.3'
-  gem 'bundler-audit', '~> 0.9.0'
+  gem 'bullet'
+  gem 'bundler-audit'
   gem 'debug'
   gem 'factory_bot_rails'
   gem 'faker'
