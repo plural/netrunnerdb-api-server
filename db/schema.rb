@@ -10,45 +10,45 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_07_30_010551) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_26_152812) do
   # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
-  enable_extension "plpgsql"
 
   create_table "card_cycles", id: :string, force: :cascade do |t|
-    t.text "name", null: false
-    t.text "description"
     t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.date "date_release"
+    t.text "description"
     t.string "legacy_code"
-    t.string "released_by"
+    t.text "name", null: false
     t.integer "position"
+    t.string "released_by"
+    t.datetime "updated_at", null: false
   end
 
   create_table "card_faces", primary_key: ["card_id", "face_index"], force: :cascade do |t|
-    t.string "card_id", null: false
-    t.integer "face_index", null: false
     t.text "base_link"
+    t.string "card_id", null: false
+    t.datetime "created_at", null: false
     t.text "display_subtypes"
+    t.integer "face_index", null: false
     t.text "stripped_text"
     t.text "stripped_title"
     t.text "text"
     t.text "title"
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "card_faces_card_subtypes", id: false, force: :cascade do |t|
     t.string "card_id", null: false
-    t.integer "face_index", null: false
     t.string "card_subtype_id"
+    t.integer "face_index", null: false
   end
 
   create_table "card_pools", id: :string, force: :cascade do |t|
-    t.text "name", null: false
-    t.text "format_id", null: false
     t.datetime "created_at", null: false
+    t.text "format_id", null: false
+    t.text "name", null: false
     t.datetime "updated_at", null: false
   end
 
@@ -59,8 +59,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_30_010551) do
   end
 
   create_table "card_pools_card_sets", id: false, force: :cascade do |t|
-    t.text "card_set_id", null: false
     t.text "card_pool_id", null: false
+    t.text "card_set_id", null: false
     t.index ["card_set_id", "card_pool_id"], name: "index_card_pools_card_sets_on_card_set_id_and_card_pool_id"
   end
 
@@ -71,88 +71,88 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_30_010551) do
   end
 
   create_table "card_set_types", id: :string, force: :cascade do |t|
-    t.text "name", null: false
-    t.text "description"
     t.datetime "created_at", null: false
+    t.text "description"
+    t.text "name", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "card_sets", id: :string, force: :cascade do |t|
-    t.text "name", null: false
-    t.date "date_release"
-    t.integer "size"
     t.text "card_cycle_id"
     t.text "card_set_type_id"
-    t.integer "position"
     t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.date "date_release"
     t.string "legacy_code"
+    t.text "name", null: false
+    t.integer "position"
     t.string "released_by"
+    t.integer "size"
+    t.datetime "updated_at", null: false
   end
 
   create_table "card_subtypes", id: :string, force: :cascade do |t|
-    t.text "name", null: false
     t.datetime "created_at", null: false
+    t.text "name", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "card_types", id: :string, force: :cascade do |t|
-    t.text "name", null: false
     t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.text "name", null: false
     t.string "side_id"
+    t.datetime "updated_at", null: false
   end
 
   create_table "cards", id: :string, force: :cascade do |t|
-    t.text "title", null: false
-    t.text "stripped_title", null: false
-    t.text "card_type_id", null: false
-    t.text "side_id", null: false
-    t.text "faction_id", null: false
-    t.integer "advancement_requirement"
-    t.integer "agenda_points"
-    t.integer "base_link"
-    t.integer "cost"
-    t.integer "deck_limit"
-    t.integer "influence_cost"
-    t.integer "influence_limit"
-    t.integer "memory_cost"
-    t.integer "minimum_deck_size"
-    t.integer "strength"
-    t.text "stripped_text"
-    t.text "text"
-    t.integer "trash_cost"
-    t.boolean "is_unique"
-    t.text "display_subtypes"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.boolean "additional_cost", default: false
     t.boolean "advanceable", default: false
+    t.integer "advancement_requirement"
+    t.integer "agenda_points"
+    t.string "attribution"
+    t.integer "base_link"
+    t.text "card_type_id", null: false
+    t.boolean "charge", default: false
+    t.integer "cost"
+    t.datetime "created_at", null: false
+    t.integer "deck_limit"
+    t.string "designed_by"
+    t.text "display_subtypes"
+    t.text "faction_id", null: false
+    t.boolean "gains_click", default: false
     t.boolean "gains_subroutines", default: false
+    t.boolean "has_paid_ability", default: false
+    t.integer "influence_cost"
+    t.integer "influence_limit"
+    t.boolean "install_effect", default: false
     t.boolean "interrupt", default: false
+    t.boolean "is_unique"
+    t.string "layout_id", default: "normal", null: false
     t.integer "link_provided"
+    t.boolean "mark", default: false
+    t.integer "memory_cost"
+    t.integer "minimum_deck_size"
     t.integer "mu_provided"
+    t.string "narrative_text"
     t.integer "num_printed_subroutines"
     t.boolean "on_encounter_effect", default: false
     t.boolean "performs_trace", default: false
-    t.integer "recurring_credits_provided"
-    t.boolean "rez_effect", default: false
-    t.boolean "trash_ability", default: false
-    t.string "attribution"
-    t.string "designed_by"
     t.string "pronouns"
     t.string "pronunciation_approximation"
     t.string "pronunciation_ipa"
-    t.string "layout_id", default: "normal", null: false
-    t.string "narrative_text"
-    t.boolean "install_effect", default: false
-    t.boolean "charge", default: false
-    t.boolean "gains_click", default: false
-    t.boolean "has_paid_ability", default: false
-    t.boolean "mark", default: false
+    t.integer "recurring_credits_provided"
+    t.boolean "rez_effect", default: false
     t.boolean "sabotage", default: false
     t.boolean "score_effect", default: false
+    t.text "side_id", null: false
     t.boolean "steal_effect", default: false
+    t.integer "strength"
+    t.text "stripped_text"
+    t.text "stripped_title", null: false
+    t.text "text"
+    t.text "title", null: false
+    t.boolean "trash_ability", default: false
+    t.integer "trash_cost"
+    t.datetime "updated_at", null: false
     t.index ["card_type_id"], name: "index_cards_on_card_type_id"
     t.index ["faction_id"], name: "index_cards_on_faction_id"
     t.index ["side_id"], name: "index_cards_on_side_id"
@@ -166,66 +166,66 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_30_010551) do
   end
 
   create_table "decklists", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "user_id", null: false
+    t.datetime "created_at", null: false
     t.boolean "follows_basic_deckbuilding_rules", default: true, null: false
     t.string "identity_card_id", null: false
-    t.string "side_id", null: false
     t.string "name", null: false
     t.string "notes", default: "", null: false
+    t.string "side_id", null: false
     t.string "tags", array: true
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "user_id", null: false
     t.index ["tags"], name: "index_decklists_on_tags", using: :gin
   end
 
   create_table "decklists_cards", id: false, force: :cascade do |t|
-    t.uuid "decklist_id", null: false
     t.string "card_id", null: false
+    t.uuid "decklist_id", null: false
     t.integer "quantity", null: false
     t.index ["decklist_id", "card_id"], name: "index_decklists_cards_on_decklist_id_and_card_id", unique: true
   end
 
   create_table "decks", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
-    t.string "user_id", null: false
+    t.datetime "created_at", null: false
     t.boolean "follows_basic_deckbuilding_rules", default: true, null: false
     t.string "identity_card_id", null: false
-    t.string "side_id", null: false
     t.string "name", null: false
     t.string "notes", default: "", null: false
+    t.string "side_id", null: false
     t.string "tags", array: true
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "user_id", null: false
     t.index ["tags"], name: "index_decks_on_tags", using: :gin
   end
 
   create_table "decks_cards", id: false, force: :cascade do |t|
-    t.uuid "deck_id", null: false
     t.string "card_id", null: false
+    t.uuid "deck_id", null: false
     t.integer "quantity", null: false
     t.index ["deck_id", "card_id"], name: "index_decks_cards_on_deck_id_and_card_id", unique: true
   end
 
   create_table "factions", id: :string, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "description"
     t.boolean "is_mini", null: false
     t.text "name", null: false
     t.text "side_id", null: false
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "description"
   end
 
   create_table "formats", id: :string, force: :cascade do |t|
-    t.text "name", null: false
     t.text "active_snapshot_id", null: false
     t.datetime "created_at", null: false
+    t.text "name", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "illustrators", id: :string, force: :cascade do |t|
-    t.string "name"
     t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.string "name"
     t.integer "num_printings"
+    t.datetime "updated_at", null: false
   end
 
   create_table "illustrators_printings", id: false, force: :cascade do |t|
@@ -235,94 +235,94 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_30_010551) do
   end
 
   create_table "printing_faces", primary_key: ["printing_id", "face_index"], force: :cascade do |t|
-    t.string "printing_id", null: false
-    t.integer "face_index", null: false
     t.integer "copy_quantity"
-    t.text "flavor"
     t.datetime "created_at", null: false
+    t.integer "face_index", null: false
+    t.text "flavor"
+    t.string "printing_id", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "printings", id: :string, force: :cascade do |t|
     t.text "card_id"
     t.text "card_set_id"
-    t.text "printed_text"
-    t.text "stripped_printed_text"
-    t.boolean "printed_is_unique"
-    t.text "flavor"
-    t.text "display_illustrators"
-    t.integer "position"
-    t.integer "quantity"
-    t.date "date_release"
     t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.date "date_release"
+    t.text "display_illustrators"
+    t.text "flavor"
+    t.integer "position"
     t.integer "position_in_set"
+    t.boolean "printed_is_unique"
+    t.text "printed_text"
+    t.integer "quantity"
     t.string "released_by"
+    t.text "stripped_printed_text"
+    t.datetime "updated_at", null: false
   end
 
   create_table "printings_card_subtypes", id: false, force: :cascade do |t|
-    t.text "printing_id", null: false
     t.text "card_subtype_id", null: false
+    t.text "printing_id", null: false
     t.index ["printing_id", "card_subtype_id"], name: "index_printings_card_subtypes_on_card_id_and_subtype_id"
   end
 
   create_table "restrictions", id: :string, force: :cascade do |t|
-    t.text "name", null: false
-    t.text "date_start", null: false
-    t.integer "point_limit"
     t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.text "date_start", null: false
     t.string "format_id"
+    t.text "name", null: false
+    t.integer "point_limit"
+    t.datetime "updated_at", null: false
   end
 
   create_table "restrictions_card_subtypes_banned", id: false, force: :cascade do |t|
-    t.text "restriction_id", null: false
     t.text "card_subtype_id", null: false
     t.datetime "created_at", null: false
+    t.text "restriction_id", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "restrictions_cards_banned", id: false, force: :cascade do |t|
-    t.text "restriction_id", null: false
     t.text "card_id", null: false
     t.datetime "created_at", null: false
+    t.text "restriction_id", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "restrictions_cards_global_penalty", id: false, force: :cascade do |t|
-    t.text "restriction_id", null: false
     t.text "card_id", null: false
     t.datetime "created_at", null: false
+    t.text "restriction_id", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "restrictions_cards_points", id: false, force: :cascade do |t|
-    t.text "restriction_id", null: false
     t.text "card_id", null: false
-    t.integer "value", null: false
     t.datetime "created_at", null: false
+    t.text "restriction_id", null: false
     t.datetime "updated_at", null: false
+    t.integer "value", null: false
   end
 
   create_table "restrictions_cards_restricted", id: false, force: :cascade do |t|
-    t.text "restriction_id", null: false
     t.text "card_id", null: false
     t.datetime "created_at", null: false
+    t.text "restriction_id", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "restrictions_cards_universal_faction_cost", id: false, force: :cascade do |t|
-    t.text "restriction_id", null: false
     t.text "card_id", null: false
-    t.integer "value", null: false
     t.datetime "created_at", null: false
+    t.text "restriction_id", null: false
     t.datetime "updated_at", null: false
+    t.integer "value", null: false
   end
 
   create_table "review_comments", force: :cascade do |t|
     t.text "body"
-    t.bigint "review_id", null: false
     t.datetime "created_at", null: false
+    t.bigint "review_id", null: false
     t.datetime "updated_at", null: false
     t.string "user_id"
     t.index ["review_id"], name: "index_review_comments_on_review_id"
@@ -330,10 +330,10 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_30_010551) do
   end
 
   create_table "review_votes", force: :cascade do |t|
-    t.string "user_id"
-    t.bigint "review_id", null: false
     t.datetime "created_at", null: false
+    t.bigint "review_id", null: false
     t.datetime "updated_at", null: false
+    t.string "user_id"
     t.index ["review_id"], name: "index_review_votes_on_review_id"
   end
 
@@ -347,28 +347,28 @@ ActiveRecord::Schema[7.2].define(version: 2025_07_30_010551) do
   end
 
   create_table "rulings", force: :cascade do |t|
-    t.string "card_id", null: false
-    t.string "question"
     t.string "answer"
-    t.string "text_ruling"
-    t.boolean "nsg_rules_team_verified", null: false
+    t.string "card_id", null: false
     t.datetime "created_at", null: false
+    t.boolean "nsg_rules_team_verified", null: false
+    t.string "question"
+    t.string "text_ruling"
     t.datetime "updated_at", null: false
   end
 
   create_table "sides", id: :string, force: :cascade do |t|
-    t.text "name", null: false
     t.datetime "created_at", null: false
+    t.text "name", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "snapshots", id: :string, force: :cascade do |t|
-    t.text "format_id", null: false
-    t.text "card_pool_id", null: false
-    t.text "date_start", null: false
-    t.text "restriction_id"
     t.boolean "active", null: false
+    t.text "card_pool_id", null: false
     t.datetime "created_at", null: false
+    t.text "date_start", null: false
+    t.text "format_id", null: false
+    t.text "restriction_id"
     t.datetime "updated_at", null: false
   end
 

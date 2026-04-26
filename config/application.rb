@@ -4,22 +4,21 @@ require_relative 'boot'
 
 require 'rails/all'
 
-require 'sprockets/railtie'
-
-# TODO(plural): See if there is a different solution here.
-# Requied by Graphiti but not included in their for top-level Gem for some reason.
-require 'ostruct'
-
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
 module NrdbApi
   class Application < Rails::Application # rubocop:disable Style/Documentation
+    # Default port of 3100 instead of 3000 to allow running Cobra locally on 3000 at the same time.
     routes.default_url_options[:host] = ENV.fetch('HOST', 'http://localhost:3100')
-
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0
+
+    # Please, add to the `ignore` list any other `lib` subdirectories that do
+    # not contain `.rb` files, or that should not be reloaded or eager loaded.
+    # Common ones are `templates`, `generators`, or `middleware`, for example.
+    config.autoload_lib(ignore: %w[assets tasks])
 
     # Configuration for the application, engines, and railties goes here.
     #
