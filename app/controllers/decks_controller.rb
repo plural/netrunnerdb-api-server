@@ -67,7 +67,7 @@ class DecksController < ApplicationController
       deck.name = attributes.key?(:name) ? attributes[:name] : deck.name
       deck.notes = attributes.key?(:notes) ? attributes[:notes] : deck.notes
       deck.tags = attributes.key?(:tags) ? attributes[:tags] : deck.tags
-      deck.updated_at = Time.now.utc.to_formatted_s(:iso8601)
+      deck.updated_at = Time.now.utc.to_fs(:iso8601)
 
       card_slots.each do |card_id, quantity|
         deck.card_slots.create!(card_id:, quantity:)

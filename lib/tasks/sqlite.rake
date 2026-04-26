@@ -67,7 +67,7 @@ namespace :sqlite do
     end
 
     db_file = Rails.root.join('db', 'netrunnerdb.sqlite3')
-    File.delete(db_file) if File.exist?(db_file)
+    FileUtils.rm_f(db_file)
 
     puts "Creating tables in SQLite db at #{db_file}..."
     ActiveRecord::Base.establish_connection(

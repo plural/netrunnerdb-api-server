@@ -7,7 +7,7 @@ class CreateRulings < ActiveRecord::Migration[7.0] # rubocop:disable Style/Docum
       t.string :question
       t.string :answer
       t.string :text_ruling
-      t.boolean :nsg_rules_team_verified, null: false
+      t.boolean :nsg_rules_team_verified, null: false # rubocop:disable Rails/ThreeStateBooleanColumn
       t.timestamps
     end
 

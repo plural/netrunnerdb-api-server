@@ -292,7 +292,7 @@ RSpec.describe CardSearchQueryBuilder do
         expect(builder.where.strip).to eq(
           '(SELECT id FROM snapshots WHERE format_id = ? AND active) = ANY(snapshot_ids) ' \
           'AND NOT (' \
-          'SELECT restriction_id FROM snapshots WHERE format_id = ? AND active) '\
+          'SELECT restriction_id FROM snapshots WHERE format_id = ? AND active) ' \
           '= ANY(restrictions_banned)'
         )
         expect(builder.where_values).to eq(%w[standard standard])
@@ -305,10 +305,10 @@ RSpec.describe CardSearchQueryBuilder do
 
       it 'builds correct where clause' do
         expect(builder.where.strip).to eq(
-          '(SELECT id FROM snapshots WHERE format_id = ? ORDER BY date_start DESC LIMIT 1) '\
+          '(SELECT id FROM snapshots WHERE format_id = ? ORDER BY date_start DESC LIMIT 1) ' \
           '= ANY(snapshot_ids) ' \
           'AND NOT (' \
-          'SELECT restriction_id FROM snapshots WHERE format_id = ? ORDER BY date_start DESC LIMIT 1) '\
+          'SELECT restriction_id FROM snapshots WHERE format_id = ? ORDER BY date_start DESC LIMIT 1) ' \
           '= ANY(restrictions_banned)'
         )
         expect(builder.where_values).to eq(%w[startup startup])

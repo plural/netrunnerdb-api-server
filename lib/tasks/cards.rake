@@ -79,9 +79,8 @@ namespace :cards do
   def flatten_subtypes(all_subtypes, card_subtypes)
     return if card_subtypes.nil?
 
-    subtype_names = []
-    card_subtypes.each do |subtype|
-      subtype_names << all_subtypes[subtype].name
+    subtype_names = card_subtypes.map do |subtype|
+      all_subtypes[subtype].name
     end
     subtype_names.join(' - ')
   end
@@ -173,7 +172,7 @@ namespace :cards do
           gains_subroutines = true
           t = t.gsub(/gains "\[subroutine\].*?"/, '')
         end
-        num_printed_subroutines = t.scan(/\[subroutine\]/).length
+        num_printed_subroutines = t.scan('[subroutine]').length
         new_card.gains_subroutines = gains_subroutines
         new_card.num_printed_subroutines = num_printed_subroutines
       end
@@ -328,7 +327,7 @@ namespace :cards do
   # This assumes that cards and card subtypes have already been loaded.
   def import_printing_subtypes
     printing_id_to_card_subtype_id = []
-    RawCard.all.find_each do |c|
+    RawCard.find_each do |c|
       c.printing_ids.each do |p|
         c.card_subtype_ids.each do |s|
           printing_id_to_card_subtype_id << [p, s]
@@ -349,9 +348,8 @@ namespace :cards do
         num_assoc += m.length
         puts "  #{num_assoc} printing -> subtype associations"
         sql = 'INSERT INTO printings_card_subtypes (printing_id, card_subtype_id) VALUES '
-        vals = []
-        m.each do |n|
-          vals << "('#{n[0]}', '#{n[1]}')"
+        vals = m.map do |n|
+          "('#{n[0]}', '#{n[1]}')"
         end
         sql += vals.join(', ')
         unless ActiveRecord::Base.connection.execute(sql)
@@ -386,9 +384,8 @@ namespace :cards do
         num_assoc += m.length
         puts "  #{num_assoc} card -> subtype associations"
         sql = 'INSERT INTO cards_card_subtypes (card_id, card_subtype_id) VALUES '
-        vals = []
-        m.each do |n|
-          vals << "('#{n[0]}', '#{n[1]}')"
+        vals = m.map do |n|
+          "('#{n[0]}', '#{n[1]}')"
         end
         sql += vals.join(', ')
         unless ActiveRecord::Base.connection.execute(sql)
@@ -426,7 +423,7 @@ namespace :cards do
   end
 
   def update_date_release_for_cycles
-    CardCycle.all.find_each do |c|
+    CardCycle.find_each do |c|
       num_non_booster_sets = c.card_sets.where.not(card_set_type_id: 'booster_pack').count
 
       c.date_release = if num_non_booster_sets.positive?
@@ -442,15 +439,15 @@ namespace :cards do
     printings = JSON.parse(File.read(path))
     printings.map! do |s|
       {
-        "id": s['id'],
-        "name": s['name'],
-        "date_release": s['date_release'],
-        "size": s['size'],
-        "card_cycle_id": s['card_cycle_id'],
-        "card_set_type_id": s['card_set_type_id'],
-        "position": s['position'],
-        "legacy_code": s['legacy_code'],
-        "released_by": s['released_by']
+        id: s['id'],
+        name: s['name'],
+        date_release: s['date_release'],
+        size: s['size'],
+        card_cycle_id: s['card_cycle_id'],
+        card_set_type_id: s['card_set_type_id'],
+        position: s['position'],
+        legacy_code: s['legacy_code'],
+        released_by: s['released_by']
       }
     end
     CardSet.import printings, on_duplicate_key_update: { conflict_target: [:id], columns: :all }
@@ -459,9 +456,8 @@ namespace :cards do
   def import_printings(printings)
     card_sets = CardSet.all.index_by(&:id)
 
-    new_printings = []
-    printings.each do |printing|
-      new_printings << RawPrinting.new(
+    new_printings = printings.map do |printing|
+      RawPrinting.new(
         id: printing['id'],
         flavor: printing['flavor'],
         display_illustrators: printing['illustrator'],
@@ -482,7 +478,7 @@ namespace :cards do
     end
 
     # Use ROW_NUMBER() to identify the position of each printing in the each set.
-    sql = <<~SQL
+    sql = <<~SQL.squish
       UPDATE
         printings
       SET
@@ -527,20 +523,19 @@ namespace :cards do
           illustrators.add(i)
           num_its += 1
           illustrators_to_printings << {
-            "illustrator_id": text_to_id(i),
-            "printing_id": printing.id
+            illustrator_id: text_to_id(i),
+            printing_id: printing.id
           }
           illustrator_num_printings[i] = 0 unless illustrator_num_printings.key?(i)
           illustrator_num_printings[i] += 1
         end
       end
 
-      ill = []
-      illustrators.each do |i|
-        ill << {
-          "id": text_to_id(i),
-          "name": i,
-          "num_printings": illustrator_num_printings[i]
+      ill = illustrators.map do |i|
+        {
+          id: text_to_id(i),
+          name: i,
+          num_printings: illustrator_num_printings[i]
         }
       end
 
@@ -603,9 +598,8 @@ namespace :cards do
   end
 
   def import_card_pools(card_pools)
-    new_card_pools = []
-    card_pools.each do |p|
-      new_card_pools << CardPool.new(
+    new_card_pools = card_pools.map do |p|
+      CardPool.new(
         id: p['id'],
         name: p['name'],
         format_id: p['format_id']
@@ -639,10 +633,9 @@ namespace :cards do
         num_assoc += m.length
         puts "  #{num_assoc} card_pool -> cycle associations"
         sql = 'INSERT INTO card_pools_card_cycles (card_pool_id, card_cycle_id) VALUES '
-        vals = []
-        m.each do |n|
+        vals = m.map do |n|
           # TODO(ams): use the associations object for this or ensure this is safe
-          vals << "('#{n[0]}', '#{n[1]}')"
+          "('#{n[0]}', '#{n[1]}')"
         end
         sql += vals.join(', ')
         unless ActiveRecord::Base.connection.execute(sql)
@@ -657,7 +650,7 @@ namespace :cards do
     card_pool_id_to_set_id = Set.new
 
     # Get implied sets from cycles in the card_pool
-    sql = <<~SQL
+    sql = <<~SQL.squish
       SELECT
         card_pool_id,
         id
@@ -692,10 +685,9 @@ namespace :cards do
         num_assoc += m.length
         puts "  #{num_assoc} card_pool -> card set associations"
         sql = 'INSERT INTO card_pools_card_sets (card_pool_id, card_set_id) VALUES '
-        vals = []
-        m.each do |n|
+        vals = m.map do |n|
           # TODO(ams): use the associations object for this or ensure this is safe
-          vals << "('#{n[0]}', '#{n[1]}')"
+          "('#{n[0]}', '#{n[1]}')"
         end
         sql += vals.join(', ')
         unless ActiveRecord::Base.connection.execute(sql)
@@ -710,7 +702,7 @@ namespace :cards do
     card_pool_id_to_card_id = Set.new
 
     # Get implied cards from sets in the card_pool
-    sql = <<~SQL
+    sql = <<~SQL.squish
       SELECT
         card_pool_id,
         card_id
@@ -746,10 +738,9 @@ namespace :cards do
         num_assoc += m.length
         puts "  #{num_assoc} card_pool -> card associations"
         sql = 'INSERT INTO card_pools_cards (card_pool_id, card_id) VALUES '
-        vals = []
-        m.each do |n|
+        vals = m.map do |n|
           # TODO(ams): use the associations object for this or ensure this is safe
-          vals << "('#{n[0]}', '#{n[1]}')"
+          "('#{n[0]}', '#{n[1]}')"
         end
         sql += vals.join(', ')
         unless ActiveRecord::Base.connection.execute(sql)
@@ -761,9 +752,8 @@ namespace :cards do
   end
 
   def import_restrictions(restrictions)
-    new_restrictions = []
-    restrictions.each do |m|
-      new_restrictions << Restriction.new(
+    new_restrictions = restrictions.map do |m|
+      Restriction.new(
         id: m['id'],
         name: m['name'],
         date_start: m['date_start'],
@@ -911,9 +901,8 @@ namespace :cards do
   end
 
   def import_rulings(rulings_json)
-    rulings = []
-    rulings_json.each do |r|
-      rulings << Ruling.new(
+    rulings = rulings_json.map do |r|
+      Ruling.new(
         card_id: r['card_id'],
         question: strip_if_not_nil(r['question']),
         answer: strip_if_not_nil(r['answer']),

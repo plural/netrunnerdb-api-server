@@ -23,7 +23,7 @@ class Deck < ApplicationRecord
   has_many :cards, through: :deck_cards
 
   def card_slots
-    deck_cards.order(:card_id).each_with_object({}) { |c, h| h[c.card_id] = c.quantity }
+    deck_cards.order(:card_id).to_h { |c| [c.card_id, c.quantity] }
   end
 
   def num_cards
