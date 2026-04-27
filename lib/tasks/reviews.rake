@@ -46,7 +46,7 @@ namespace :reviews do
     puts 'Importing Reviews from NetrunnerDB Classic'
     reviews_body = retrieve_reviews
 
-    card_ids = Card.all.pluck(:id).to_set
+    card_ids = Card.pluck(:id).to_set
     Review.transaction do
       purge_tables
       puts 'Starting import'

@@ -47,12 +47,12 @@ class Printing < ApplicationRecord
     # The excluded sets were designed by FFG despite being released by NSG. We do not want to distribute high quality
     # versions of them.
     released_by == 'null_signal_games' &&
-      !%w[
+      %w[
         system_core_2019
         magnum_opus_reprint
         salvaged_memories
         system_update_2021
-      ].include?(card_set_id)
+      ].exclude?(card_set_id)
   end
 
   def restrictions

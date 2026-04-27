@@ -23,7 +23,7 @@ class Decklist < ApplicationRecord
   has_many :cards, through: :decklist_cards
 
   def card_slots
-    decklist_cards.order(:card_id).each_with_object({}) { |c, h| h[c.card_id] = c.quantity }
+    decklist_cards.order(:card_id).to_h { |c| [c.card_id, c.quantity] }
   end
 
   def num_cards
@@ -38,7 +38,7 @@ class Decklist < ApplicationRecord
   # into account. Leaving this here as an example for now, but it will need to
   # be removed in favor of snapshot-specific calculations.
   def influence_spent
-    qty = decklist_cards.each_with_object({}) { |c, h| h[c.card_id] = c.quantity }
+    qty = decklist_cards.to_h { |c| [c.card_id, c.quantity] }
     cards
       # Exclude identity
       .reject { |c| c.id == identity_card.id }

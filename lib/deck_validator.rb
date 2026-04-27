@@ -367,8 +367,7 @@ class DeckValidator # rubocop:disable Metrics/ClassLength
                         @cards[card_id].card_type_id == 'agenda'
                       end.map { |card_id, card| card.agenda_points * @deck['cards'][card_id] }.sum # rubocop:disable Style/MultilineBlockChain
 
-      min_agenda_points =
-        (num_cards < @identity.minimum_deck_size ? @identity.minimum_deck_size : num_cards) / 5 * 2 + 2
+      min_agenda_points = ([num_cards, @identity.minimum_deck_size].max / 5 * 2) + 2
       required_agenda_points = [min_agenda_points, min_agenda_points + 1]
       unless required_agenda_points.include?(agenda_points)
         local_errors << format(
@@ -398,8 +397,8 @@ class DeckValidator # rubocop:disable Metrics/ClassLength
     else
       @deck['cards']
         .select do |card_id|
-        @cards[card_id].card_type_id == 'agenda' and ![@identity.faction_id,
-                                                       'neutral_corp'].include?(@cards[card_id].faction_id)
+        @cards[card_id].card_type_id == 'agenda' and
+          [@identity.faction_id, 'neutral_corp'].exclude?(@cards[card_id].faction_id)
       end # rubocop:disable Style/MultilineBlockChain
         .each_key do |card_id|
         local_errors << "Agenda `#{card_id}` with faction_id `#{@cards[card_id].faction_id}` is not allowed in a `#{@identity.faction_id}` deck." # rubocop:disable Layout/LineLength
