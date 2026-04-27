@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateDecksAndDeckslots < ActiveRecord::Migration[7.0] # rubocop:disable Style/Documentation
+class CreateDecksAndDeckslots < ActiveRecord::Migration[7.0]
   def change
     # ID will be a UUID
     create_table :decks, id: :uuid do |t|

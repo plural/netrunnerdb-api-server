@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreatePrintingFaces < ActiveRecord::Migration[7.1] # rubocop:disable Style/Documentation
+class CreatePrintingFaces < ActiveRecord::Migration[7.1]
   def change
     create_table :printing_faces, primary_key: %i[printing_id face_index] do |t|
       t.string :printing_id, null: false

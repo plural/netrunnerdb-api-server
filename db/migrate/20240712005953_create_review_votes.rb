@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateReviewVotes < ActiveRecord::Migration[7.1] # rubocop:disable Style/Documentation
+class CreateReviewVotes < ActiveRecord::Migration[7.1]
   def change
     create_table :review_votes do |t|
       t.string :username

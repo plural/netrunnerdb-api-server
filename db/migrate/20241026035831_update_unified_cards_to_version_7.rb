@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class UpdateUnifiedCardsToVersion7 < ActiveRecord::Migration[7.1] # rubocop:disable Style/Documentation
+class UpdateUnifiedCardsToVersion7 < ActiveRecord::Migration[7.1]
   def change
     update_view :unified_cards,
                 version: 7,

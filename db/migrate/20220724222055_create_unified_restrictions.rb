@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateUnifiedRestrictions < ActiveRecord::Migration[7.0] # rubocop:disable Style/Documentation
+class CreateUnifiedRestrictions < ActiveRecord::Migration[7.0]
   def change
     create_view :unified_restrictions, materialized: true
 

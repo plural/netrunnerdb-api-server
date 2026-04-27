@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreateIllustratorTables < ActiveRecord::Migration[7.0] # rubocop:disable Style/Documentation
+class CreateIllustratorTables < ActiveRecord::Migration[7.0]
   def change
     create_table :illustrators, id: :string do |t|
       t.string :name
