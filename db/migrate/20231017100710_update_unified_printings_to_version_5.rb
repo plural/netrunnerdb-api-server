@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class UpdateUnifiedPrintingsToVersion5 < ActiveRecord::Migration[7.0] # rubocop:disable Style/Documentation
+class UpdateUnifiedPrintingsToVersion5 < ActiveRecord::Migration[7.0]
   def change
     update_view :unified_printings,
                 version: 5,

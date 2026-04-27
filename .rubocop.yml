@@ -7,7 +7,7 @@ plugins:
 AllCops:
   Exclude:
     - 'bin/*'
-    - 'db/schema.rb'
+    - 'db/**/*'
     - 'vendor/**/*'
 
 FactoryBot/AssociationStyle: # new in 2.23

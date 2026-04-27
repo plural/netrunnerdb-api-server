@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class AddDetailedAttributesToCards < ActiveRecord::Migration[7.0] # rubocop:disable Style/Documentation
+class AddDetailedAttributesToCards < ActiveRecord::Migration[7.0]
   def change
     add_column :cards, :additional_cost, :bool, default: false
     add_column :cards, :advanceable, :bool, default: false

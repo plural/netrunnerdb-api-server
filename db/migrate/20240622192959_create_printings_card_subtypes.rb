@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class CreatePrintingsCardSubtypes < ActiveRecord::Migration[7.1] # rubocop:disable Style/Documentation
+class CreatePrintingsCardSubtypes < ActiveRecord::Migration[7.1]
   def change
     create_table :printings_card_subtypes, id: false, force: :cascade do |t|
       t.text :printing_id, null: false
