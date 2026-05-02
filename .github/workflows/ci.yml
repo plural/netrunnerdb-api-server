@@ -15,8 +15,8 @@ env:
   IMAGENAME: registry.digitalocean.com/nsgcr/nrdb-api-server
 
 jobs:
-  test:
-    name: Test
+  ci:
+    name: "Continuous Integration"
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -54,15 +54,8 @@ jobs:
         run: |
           cp config/database.ci.yml config/database.yml
 
-      - name: Set up database schema
-        run: |
-          bin/rails db:reset --trace
-
-      - name: Run rspec tests
-        run: bundle exec rspec
-
-      - name: Run rails tests
-        run: bundle exec rails test
+      - name: Run CI
+        run: bundle exec bin/ci
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
@@ -71,29 +64,11 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Install Ruby and gems
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.4.4
-          bundler-cache: true
-      - name: Security audit dependencies
-        run: bundle exec bundler-audit --update
-      - name: Security audit application code
-        run: bundle exec brakeman -q -w2
-      - name: Lint Ruby files
-        run: bundle exec rubocop --parallel
-
   build_and_push:
     name: Build docker image
     if: (github.ref == 'refs/heads/main') || (github.event_name == 'release')
 
-    needs: [test, lint]
+    needs: [ci]
     runs-on: ubuntu-latest
     steps:
 
