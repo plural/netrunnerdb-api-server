@@ -29,10 +29,11 @@ class DecklistResource < ApplicationResource
   # Will return decklists where all cards specified are present.
   filter :card_id, :string do
     eq do |scope, card_ids|
-      scope.joins(:decklist_cards)
-           .where(decklist_cards: { card_id: card_ids })
-           .group('decklists.id')
-           .having('COUNT(DISTINCT decklist_cards.card_id) = ?', card_ids.length)
+      matching = DecklistCard.where(card_id: card_ids)
+                             .group(:decklist_id)
+                             .having('COUNT(DISTINCT card_id) = ?', card_ids.length)
+                             .select(:decklist_id)
+      scope.where(id: matching)
     end
   end
 
