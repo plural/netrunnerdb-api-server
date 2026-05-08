@@ -96,6 +96,35 @@ RSpec.describe DecklistResource, type: :resource do
         expect(decklist_ids).to include(runner_decklist.id)
       end
     end
+
+    context 'with card_id and exclude_card_id combined' do
+      let!(:corp_decklist) { Decklist.find('11111111-1111-1111-1111-111111111111') }
+      let!(:runner_decklist) { Decklist.find('22222222-2222-2222-2222-222222222222') }
+
+      it 'returns the decklist that contains the card and lacks the excluded card' do
+        params[:filter] = { card_id: { eq: 'pennyshaver' }, exclude_card_id: { eq: 'hedge_fund' } }
+        render
+        expect(d.map(&:id)).to eq([runner_decklist.id])
+      end
+
+      it 'returns no decklists when the contained card is also excluded' do
+        params[:filter] = { card_id: { eq: 'pennyshaver' }, exclude_card_id: { eq: 'pennyshaver' } }
+        render
+        expect(d).to be_empty
+      end
+
+      it 'returns no decklists when the only matching decklist also has the excluded card' do
+        params[:filter] = { card_id: { eq: 'pennyshaver' }, exclude_card_id: { eq: 'stargate' } }
+        render
+        expect(d).to be_empty
+      end
+
+      it 'returns the decklist when the excluded card is absent from the matching decklist' do
+        params[:filter] = { card_id: { eq: 'adonis_campaign' }, exclude_card_id: { eq: 'stargate' } }
+        render
+        expect(d.map(&:id)).to eq([corp_decklist.id])
+      end
+    end
   end
 
   describe 'sideloading' do
