@@ -18,6 +18,7 @@ Rails.application.routes.draw do
     resources :formats, only: %i[index show]
     resources :illustrators, only: %i[index show]
     resources :printings, only: %i[index show]
+    resources :published_databases, only: [:index]
     resources :restrictions, only: %i[index show]
     resources :reviews, only: %i[index show]
     resources :rulings, only: %i[index show]
