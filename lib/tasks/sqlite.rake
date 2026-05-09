@@ -13,7 +13,7 @@ namespace :sqlite do
     if upload
       missing_vars = []
       %w[DO_SPACES_KEY DO_SPACES_SECRET DO_SPACES_ENDPOINT DO_SPACES_REGION DO_SPACES_BUCKET
-         DO_SPACES_FOLDER].each do |var|
+         DO_SPACES_FOLDER DB_URL_PREFIX].each do |var|
         missing_vars << var if ENV[var].nil? || ENV[var].strip.empty?
       end
 
@@ -88,6 +88,8 @@ namespace :sqlite do
     db_file = Rails.root.join('db', 'netrunnerdb.sqlite3')
     FileUtils.rm_f(db_file)
 
+    pg_config = ActiveRecord::Base.connection_db_config
+
     puts "Creating tables in SQLite db at #{db_file}..."
     ActiveRecord::Base.establish_connection(
       adapter: 'sqlite3',
@@ -141,9 +143,12 @@ namespace :sqlite do
       end
     end
 
-    gzip_path = compress_db(db_file)
+    puts 'Restoring Postgres connection...'
+    ActiveRecord::Base.establish_connection(pg_config)
 
-    upload_to_spaces(gzip_path) if upload
+    db_details = compress_db(db_file)
+
+    publish_db(db_details) if upload
 
     puts 'Done.'
   end
@@ -256,21 +261,23 @@ namespace :sqlite do
 
   def compress_db(db_file)
     puts 'Compressing database...'
-    timestamp = Time.now.to_i
-    gzip_path = "#{db_file}.#{timestamp}.gz"
+    r = { db_file: db_file, time: Time.zone.now }
+    r[:gzip_path] = "#{db_file}.#{r[:time].to_i}.gz"
 
-    Zlib::GzipWriter.open(gzip_path) do |gz|
+    Zlib::GzipWriter.open(r[:gzip_path]) do |gz|
       File.open(db_file.to_s, 'rb') do |file|
         while (chunk = file.read(1024 * 1024))
           gz.write(chunk)
         end
       end
     end
-    puts "Database compressed to #{gzip_path}"
-    gzip_path
+    puts "Database compressed to #{r[:gzip_path]}"
+
+    r
   end
 
-  def upload_to_spaces(file_path)
+  def publish_db(output_details)
+    file_path = output_details[:gzip_path]
     puts "Uploading #{file_path} to Digital Ocean Spaces..."
     s3_client = Aws::S3::Client.new(
       access_key_id: ENV.fetch('DO_SPACES_KEY'),
@@ -279,20 +286,23 @@ namespace :sqlite do
       region: ENV.fetch('DO_SPACES_REGION')
     )
 
-    bucket = ENV.fetch('DO_SPACES_BUCKET')
-    folder = ENV.fetch('DO_SPACES_FOLDER')
-    filename = File.basename(file_path)
-    key = folder ? File.join(folder, filename) : filename
+    file_path = File.join(ENV.fetch('DO_SPACES_FOLDER'), File.basename(file_path))
 
-    File.open(file_path, 'rb') do |file|
+    File.open(output_details[:db_file], 'rb') do |file|
       s3_client.put_object(
-        bucket: bucket,
-        key: key,
+        bucket: ENV.fetch('DO_SPACES_BUCKET'),
+        key: file_path,
         body: file,
         acl: 'public-read',
         content_type: 'application/gzip'
       )
     end
-    puts "Successfully #{file_path} uploaded to spaces: #{bucket}/#{key}"
+
+    published_db = PublishedDatabase.create!(
+      url: "#{ENV.fetch('DB_URL_PREFIX').gsub(%r{/$}, '')}/#{file_path}",
+      created_at: output_details[:time],
+      updated_at: output_details[:time]
+    )
+    puts "Successfully #{file_path} uploaded to spaces: #{published_db.url}"
   end
 end

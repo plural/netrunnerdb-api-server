@@ -1,0 +1,11 @@
+latest_db:
+  id: 23
+  url: https://download/netrunnerdb.sqlite3.1778352894.gz
+  created_at: <%= Time.utc(2026, 5, 9, 18, 54, 54).to_fs(:db) %>
+  updated_at: <%= Time.utc(2026, 5, 9, 18, 54, 54).to_fs(:db) %>
+
+previous_db:
+  id: 22
+  url: https://download/netrunnerdb.sqlite3.1778003694.gz
+  created_at: <%= Time.utc(2026, 5, 5, 17, 54, 54).to_fs(:db) %>
+  updated_at: <%= Time.utc(2026, 5, 5, 17, 54, 54).to_fs(:db) %>
