@@ -29,19 +29,18 @@ class DecklistResource < ApplicationResource
   # Will return decklists where all cards specified are present.
   filter :card_id, :string do
     eq do |scope, card_ids|
-      scope.joins(:decklist_cards)
-           .where(decklist_cards: { card_id: card_ids })
-           .group('decklists.id')
-           .having('COUNT(DISTINCT decklist_cards.card_id) = ?', card_ids.length)
+      matching = DecklistCard.where(card_id: card_ids)
+                             .group(:decklist_id)
+                             .having('COUNT(DISTINCT card_id) = ?', card_ids.length)
+                             .select(:decklist_id)
+      scope.where(id: matching)
     end
   end
 
   # Will return decklists that do NOT contain any of the specified cards.
   filter :exclude_card_id, :string do
     eq do |scope, card_ids|
-      scope.left_joins(:decklist_cards)
-           .group('decklists.id')
-           .having('COUNT(CASE WHEN decklists_cards.card_id IN (?) THEN 1 END) = 0', card_ids)
+      scope.where.not(id: DecklistCard.where(card_id: card_ids).select(:decklist_id))
     end
   end
 
