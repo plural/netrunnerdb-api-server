@@ -26,6 +26,9 @@ gem 'rack', '~> 3.1'
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin AJAX possible
 gem 'rack-cors'
 
+# Used for uploading files to Digital Ocean Spaces
+gem 'aws-sdk-s3'
+
 # Used for our import of the card data.
 gem 'activerecord-import'
 
