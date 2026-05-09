@@ -2,10 +2,29 @@
 
 namespace :sqlite do
   desc 'Create a sqlite3 database for configured tables.'
-  task create: :environment do
+  task :create, [:upload] => :environment do |_, args|
     require 'sqlite3'
     require 'json'
     require 'zlib'
+    require 'aws-sdk-s3'
+
+    upload = ['true', true].include?(args[:upload])
+
+    if upload
+      missing_vars = []
+      %w[DO_SPACES_KEY DO_SPACES_SECRET DO_SPACES_ENDPOINT DO_SPACES_REGION DO_SPACES_BUCKET
+         DO_SPACES_FOLDER].each do |var|
+        missing_vars << var if ENV[var].nil? || ENV[var].strip.empty?
+      end
+
+      if missing_vars.any?
+        missing_vars.each do |var|
+          puts "Missing required environment variable for upload: #{var}"
+        end
+        puts 'Upload requested but required environment variables are missing. Exiting.'
+        exit 1
+      end
+    end
 
     target_models = [
       Card,
@@ -122,7 +141,9 @@ namespace :sqlite do
       end
     end
 
-    compress_db(db_file)
+    gzip_path = compress_db(db_file)
+
+    upload_to_spaces(gzip_path) if upload
 
     puts 'Done.'
   end
@@ -246,5 +267,32 @@ namespace :sqlite do
       end
     end
     puts "Database compressed to #{gzip_path}"
+    gzip_path
+  end
+
+  def upload_to_spaces(file_path)
+    puts "Uploading #{file_path} to Digital Ocean Spaces..."
+    s3_client = Aws::S3::Client.new(
+      access_key_id: ENV.fetch('DO_SPACES_KEY'),
+      secret_access_key: ENV.fetch('DO_SPACES_SECRET'),
+      endpoint: ENV.fetch('DO_SPACES_ENDPOINT'),
+      region: ENV.fetch('DO_SPACES_REGION')
+    )
+
+    bucket = ENV.fetch('DO_SPACES_BUCKET')
+    folder = ENV.fetch('DO_SPACES_FOLDER')
+    filename = File.basename(file_path)
+    key = folder ? File.join(folder, filename) : filename
+
+    File.open(file_path, 'rb') do |file|
+      s3_client.put_object(
+        bucket: bucket,
+        key: key,
+        body: file,
+        acl: 'public-read',
+        content_type: 'application/gzip'
+      )
+    end
+    puts "Successfully #{file_path} uploaded to spaces: #{bucket}/#{key}"
   end
 end
