@@ -88,6 +88,7 @@ namespace :sqlite do
     db_file = Rails.root.join('db', 'netrunnerdb.sqlite3')
     FileUtils.rm_f(db_file)
 
+    # Store current Postgres connection config to restore once the SQLite interactions are complete.
     pg_config = ActiveRecord::Base.connection_db_config
 
     puts "Creating tables in SQLite db at #{db_file}..."
