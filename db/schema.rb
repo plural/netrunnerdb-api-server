@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_26_160000) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_09_183917) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -264,6 +264,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_26_160000) do
     t.text "card_subtype_id", null: false
     t.text "printing_id", null: false
     t.index ["printing_id", "card_subtype_id"], name: "index_printings_card_subtypes_on_card_id_and_subtype_id"
+  end
+
+  create_table "published_databases", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "url", null: false
   end
 
   create_table "restrictions", id: :string, force: :cascade do |t|
