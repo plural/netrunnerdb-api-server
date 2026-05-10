@@ -289,7 +289,7 @@ namespace :sqlite do
 
     file_path = File.join(ENV.fetch('DO_SPACES_FOLDER'), File.basename(file_path))
 
-    File.open(output_details[:db_file], 'rb') do |file|
+    File.open(output_details[:gzip_path], 'rb') do |file|
       s3_client.put_object(
         bucket: ENV.fetch('DO_SPACES_BUCKET'),
         key: file_path,
