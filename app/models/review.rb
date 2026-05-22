@@ -3,6 +3,7 @@
 # Model for reviews of cards.
 class Review < ApplicationRecord
   belongs_to :card
+  belongs_to :user, optional: true
   has_many :review_comments
   has_many :review_votes
 

@@ -4,7 +4,7 @@
 #
 # Decklists are the public, published decklists owned by various users.
 class Decklist < ApplicationRecord
-  # TODO(plural): Add a relationship to a public user object.
+  belongs_to :user
   belongs_to :side
 
   has_one :identity_card, # rubocop:disable Rails/InverseOf

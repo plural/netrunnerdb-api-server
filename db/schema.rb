@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_09_183917) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_20_044700) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -383,6 +383,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_09_183917) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "card_faces", "cards"
+  add_foreign_key "card_faces_card_subtypes", "card_faces", column: ["card_id", "face_index"], primary_key: ["card_id", "face_index"], name: "fk_card_faces_card_subtypes_card_faces"
+  add_foreign_key "card_faces_card_subtypes", "card_subtypes"
   add_foreign_key "card_pools", "formats"
   add_foreign_key "card_pools_card_cycles", "card_cycles"
   add_foreign_key "card_pools_card_cycles", "card_pools"
@@ -400,6 +403,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_09_183917) do
   add_foreign_key "cards_card_subtypes", "cards"
   add_foreign_key "decklists", "cards", column: "identity_card_id"
   add_foreign_key "decklists", "sides"
+  add_foreign_key "decklists", "users"
   add_foreign_key "decklists_cards", "cards"
   add_foreign_key "decklists_cards", "decklists"
   add_foreign_key "decks", "cards", column: "identity_card_id"
@@ -408,8 +412,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_09_183917) do
   add_foreign_key "decks_cards", "cards"
   add_foreign_key "decks_cards", "decks"
   add_foreign_key "factions", "sides"
+  add_foreign_key "illustrators_printings", "illustrators"
+  add_foreign_key "illustrators_printings", "printings"
+  add_foreign_key "printing_faces", "printings"
   add_foreign_key "printings", "card_sets"
   add_foreign_key "printings", "cards"
+  add_foreign_key "printings_card_subtypes", "card_subtypes"
+  add_foreign_key "printings_card_subtypes", "printings"
   add_foreign_key "restrictions", "formats"
   add_foreign_key "restrictions_card_subtypes_banned", "card_subtypes"
   add_foreign_key "restrictions_card_subtypes_banned", "restrictions"
@@ -424,8 +433,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_09_183917) do
   add_foreign_key "restrictions_cards_universal_faction_cost", "cards"
   add_foreign_key "restrictions_cards_universal_faction_cost", "restrictions"
   add_foreign_key "review_comments", "reviews"
+  add_foreign_key "review_comments", "users"
   add_foreign_key "review_votes", "reviews"
+  add_foreign_key "review_votes", "users"
   add_foreign_key "reviews", "cards"
+  add_foreign_key "reviews", "users"
   add_foreign_key "rulings", "cards"
   add_foreign_key "snapshots", "card_pools"
   add_foreign_key "snapshots", "formats"
