@@ -97,6 +97,44 @@ RSpec.describe DecklistResource, type: :resource do
       end
     end
 
+    context 'with card_set_id' do
+      let!(:corp_decklist) { Decklist.find('11111111-1111-1111-1111-111111111111') }
+      let!(:runner_decklist) { Decklist.find('22222222-2222-2222-2222-222222222222') }
+
+      it 'returns decklists whose cards all have a printing in the set' do
+        params[:filter] = { card_set_id: { eq: 'core' } }
+        render
+        decklist_ids = d.map(&:id)
+
+        expect(decklist_ids).to include(corp_decklist.id)
+        expect(decklist_ids).to include(runner_decklist.id)
+      end
+
+      it 'excludes decklists with any card not printed in the set' do
+        params[:filter] = { card_set_id: { eq: 'midnight_sun' } }
+        render
+        decklist_ids = d.map(&:id)
+
+        expect(decklist_ids).not_to include(corp_decklist.id)
+        expect(decklist_ids).not_to include(runner_decklist.id)
+      end
+
+      it 'treats multiple card sets as a union of legal cards' do
+        params[:filter] = { card_set_id: { eq: 'core,midnight_sun' } }
+        render
+        decklist_ids = d.map(&:id)
+
+        expect(decklist_ids).to include(corp_decklist.id)
+        expect(decklist_ids).to include(runner_decklist.id)
+      end
+
+      it 'combines with faction_id' do
+        params[:filter] = { card_set_id: { eq: 'core' }, faction_id: { eq: 'criminal' } }
+        render
+        expect(d.map(&:id)).to eq([runner_decklist.id])
+      end
+    end
+
     context 'with card_id and exclude_card_id combined' do
       let!(:corp_decklist) { Decklist.find('11111111-1111-1111-1111-111111111111') }
       let!(:runner_decklist) { Decklist.find('22222222-2222-2222-2222-222222222222') }
