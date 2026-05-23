@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_20_044700) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_22_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -182,6 +182,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_20_044700) do
     t.string "card_id", null: false
     t.uuid "decklist_id", null: false
     t.integer "quantity", null: false
+    t.index ["card_id", "decklist_id"], name: "index_decklists_cards_on_card_id_and_decklist_id"
     t.index ["decklist_id", "card_id"], name: "index_decklists_cards_on_decklist_id_and_card_id", unique: true
   end
 
