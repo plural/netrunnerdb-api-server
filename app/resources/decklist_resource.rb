@@ -44,6 +44,16 @@ class DecklistResource < ApplicationResource
     end
   end
 
+  # Will return decklists where every card has at least one printing in the specified card set(s).
+  # Multiple values are treated as the union of card sets, matching the legacy /decklist/find?packs[] behavior.
+  filter :card_set_id, :string do
+    eq do |scope, card_set_ids|
+      card_ids = Printing.where(card_set_id: card_set_ids).select(:card_id)
+      decklists_with_other_cards = DecklistCard.where.not(card_id: card_ids).select(:decklist_id)
+      scope.where.not(id: decklists_with_other_cards)
+    end
+  end
+
   attribute :card_slots, :hash
   attribute :num_cards, :integer
   attribute :influence_spent, :integer
