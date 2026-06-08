@@ -14,6 +14,7 @@ require_relative '../config/environment'
 abort('The Rails environment is running in production mode!') if Rails.env.production?
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
+require_relative 'support/api_helpers'
 
 require 'simplecov'
 require 'simplecov-cobertura'
@@ -67,6 +68,7 @@ RSpec.configure do |config|
   config.include GraphitiSpecHelpers::RSpec
   config.include GraphitiSpecHelpers::Sugar
   config.include Graphiti::Rails::TestHelpers
+  config.include ApiHelpers, type: :request
 
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false
@@ -85,6 +87,17 @@ RSpec.configure do |config|
   # The different available types are documented in the features, such as in
   # https://relishapp.com/rspec/rspec-rails/docs
   config.infer_spec_type_from_file_location!
+
+  config.before(:each, type: :request) do
+    original_env_config = Rails.application.method(:env_config)
+    allow(Rails.application).to receive(:env_config) do
+      original_env_config.call.merge(
+        'action_dispatch.show_exceptions' => :all,
+        'action_dispatch.show_detailed_exceptions' => false,
+        'consider_all_requests_local' => false
+      )
+    end
+  end
 
   # Filter lines from Rails gems in backtraces.
   config.filter_rails_from_backtrace!
