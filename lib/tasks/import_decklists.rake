@@ -39,13 +39,32 @@ namespace :import_decklists do
       cards_by_id[card.id] = card
     end
 
-    retrieve_decklists(args[:date])['data'].each do |decklist|
+    force_import = ENV['FORCE_IMPORT'] == '1'
+    puts 'FORCE_IMPORT is set to 1. All decklists will be imported.' if force_import
+
+    decklists = retrieve_decklists(args[:date])['data'] || []
+    fetched_count = decklists.size
+    puts "Fetched #{fetched_count} decklist(s) from the API."
+
+    uuids = decklists.pluck('uuid').compact
+    existing_uuids = Decklist.where(id: uuids).pluck(:id).to_set
+
+    decklists_to_import = if force_import
+                            decklists
+                          else
+                            decklists.reject { |d| existing_uuids.include?(d['uuid']) }
+                          end
+
+    written_count = 0
+    decklists_to_import.each do |decklist|
       puts format('Importing "%<name>s" by %<username>s (%<uuid>s)',
                   name: decklist['name'],
                   username: decklist['user_name'],
                   uuid: decklist['uuid'])
 
       ActiveRecord::Base.transaction do
+        User.find_or_create_by!(id: decklist['user_name'])
+
         d = Decklist.find_or_initialize_by(id: decklist['uuid'])
         d.name = decklist['name']
         d.user_id = decklist['user_name']
@@ -75,6 +94,13 @@ namespace :import_decklists do
           end
         end
       end
+      written_count += 1
+    end
+
+    if force_import
+      puts "Imported/updated #{written_count} decklist(s) out of #{fetched_count} fetched."
+    else
+      puts "Imported #{written_count} new decklist(s) out of #{fetched_count} fetched."
     end
   end
 end
