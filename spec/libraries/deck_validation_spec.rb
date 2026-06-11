@@ -49,6 +49,19 @@ RSpec.describe DeckValidation do
       end
     end
 
+    context 'with startup format only' do
+      subject(:v) { described_class.new({ 'label' => 'expand startup format', 'format_id' => 'startup' }) }
+
+      it 'expands fields' do
+        expect(v.label).to eq('expand startup format')
+        expect(v.format_id).to eq('startup')
+        expect(v.card_pool_id).to eq('startup_02')
+        expect(v.restriction_id).to eq('startup_banlist')
+        expect(v.snapshot_id).to eq('startup_02')
+        expect(v).to be_valid
+      end
+    end
+
     context 'with card pool only' do
       subject(:v) { described_class.new(card_pool_only) }
 

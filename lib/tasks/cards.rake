@@ -758,6 +758,7 @@ namespace :cards do
         name: m['name'],
         date_start: m['date_start'],
         point_limit: m['point_limit'],
+        deckbuilding_restrictions: m['deckbuilding_restrictions'] || {},
         format_id: m['format_id']
       )
     end

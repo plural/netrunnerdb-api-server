@@ -435,6 +435,23 @@ RSpec.describe DeckValidator do # rubocop:disable RSpec/MultipleMemoizedHelpers
     new_deck
   end
 
+  def replace_validation(deck, validation)
+    new_deck = deck.deep_dup
+    new_deck['validations'] = [validation]
+    new_deck
+  end
+
+  def validate_for_format(deck, format_id)
+    replace_validation(
+      deck,
+      {
+        'label' => "#{format_id.capitalize} validation.",
+        'basic_deckbuilding_rules' => true,
+        'format_id' => format_id
+      }
+    )
+  end
+
   def add_out_of_faction_agenda(deck)
     new_deck = deck.deep_dup
     new_deck['cards'].delete('send_a_message')
@@ -756,6 +773,64 @@ RSpec.describe DeckValidator do # rubocop:disable RSpec/MultipleMemoizedHelpers
       expect(v).not_to be_valid
       expect(v.validations.size).to eq(deck['validations'].size)
       expect(v.errors).to include('Snapshot `snapshot_3030` does not exist.')
+    end
+
+    it 'applies startup restriction bans like standard restriction bans' do
+      deck = validate_for_format(good_asa_group, 'startup')
+      v = described_class.new(deck)
+      expect(v).not_to be_valid
+      expect(v.validations.size).to eq(deck['validations'].size)
+      expect(v.validations[0].errors).to include('Card `hedge_fund` is banned in restriction `startup_banlist`.')
+    end
+
+    it 'fails validation for startup corp deck with too many 3+ point agendas' do
+      deck = validate_for_format(good_asa_group, 'startup')
+      v = described_class.new(deck)
+      expect(v).not_to be_valid
+      expect(v.validations.size).to eq(deck['validations'].size)
+      expect(v.validations[0].errors).to include(
+        'Startup Corp decks may not include more than 4 agenda cards with a printed agenda point value of 3 or greater, but deck has 5: ikawah_project (3), send_a_message (2).' # rubocop:disable Layout/LineLength
+      )
+    end
+
+    it 'uses the agenda cap from the startup restriction' do
+      deck = replace_validation(
+        good_asa_group,
+        {
+          'label' => 'Startup validation.',
+          'basic_deckbuilding_rules' => true,
+          'card_pool_id' => 'startup_02',
+          'restriction_id' => 'startup_three_point_agenda_limit'
+        }
+      )
+      v = described_class.new(deck)
+      expect(v).not_to be_valid
+      expect(v.validations.size).to eq(deck['validations'].size)
+      expect(v.validations[0].errors).to include(
+        'Startup Corp decks may not include more than 3 agenda cards with a printed agenda point value of 3 or greater, but deck has 5: ikawah_project (3), send_a_message (2).' # rubocop:disable Layout/LineLength
+      )
+    end
+
+    it 'allows startup corp deck at the 3+ point agenda limit' do
+      deck = validate_for_format(set_card_quantity(good_asa_group, 'send_a_message', 1), 'startup')
+      v = described_class.new(deck)
+      expect(v.validations.size).to eq(deck['validations'].size)
+      expect(v.validations[0].errors).not_to include(a_string_matching(/Startup Corp decks may not include/))
+    end
+
+    it 'does not apply startup agenda cap to snapshots without a restriction' do
+      deck = validate_for_format(good_asa_group, 'startup')
+      deck['validations'][0]['snapshot_id'] = 'startup_01'
+      v = described_class.new(deck)
+      expect(v.validations.size).to eq(deck['validations'].size)
+      expect(v.validations[0].errors).not_to include(a_string_matching(/Startup Corp decks may not include/))
+    end
+
+    it 'does not apply startup agenda cap outside startup validations' do
+      deck = validate_for_format(good_asa_group, 'standard')
+      v = described_class.new(deck)
+      expect(v.validations.size).to eq(deck['validations'].size)
+      expect(v.validations[0].errors).not_to include(a_string_matching(/Startup Corp decks may not include/))
     end
 
     it 'fails validation for cards not in specified card pool' do

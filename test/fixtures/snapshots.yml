@@ -60,6 +60,7 @@ startup_02:
   id: startup_02
   format_id: startup
   card_pool_id: startup_02
+  restriction_id: startup_banlist
   date_start: 2022-09-01
   active: true
   created_at: <%= Time.utc(2022, 12, 8, 12, 0).to_fs(:db) %>

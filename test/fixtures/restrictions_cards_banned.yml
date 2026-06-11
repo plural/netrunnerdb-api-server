@@ -4,3 +4,8 @@ standard_banlist_trieste_model_bioroids:
   created_at: <%= Time.utc(2022, 12, 8, 12, 0).to_fs(:db) %>
   updated_at: <%= Time.utc(2022, 12, 8, 12, 0).to_fs(:db) %>
 
+startup_banlist_hedge_fund:
+  restriction_id: startup_banlist
+  card_id: hedge_fund
+  created_at: <%= Time.utc(2022, 12, 8, 12, 0).to_fs(:db) %>
+  updated_at: <%= Time.utc(2022, 12, 8, 12, 0).to_fs(:db) %>
