@@ -97,7 +97,7 @@ class DeckValidator # rubocop:disable Metrics/ClassLength
 
             # Check for deckbuilding restrictions (currently just the 3+ point agenda limit in startup).
             if @deck['side_id'] == 'corp'
-              max_three_point_agendas = restriction.deckbuilding_restrictions['max_3_point_agendas']
+              max_three_point_agendas = restriction.max_3_point_agendas
               unless max_three_point_agendas.nil?
                 three_point_agendas = @deck['cards'].filter_map do |card_id, quantity|
                   card = @cards[card_id]

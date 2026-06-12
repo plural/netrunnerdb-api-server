@@ -276,8 +276,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_120000) do
   create_table "restrictions", id: :string, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "date_start", null: false
-    t.jsonb "deckbuilding_restrictions", default: {}, null: false
     t.string "format_id"
+    t.integer "max_3_point_agendas"
     t.text "name", null: false
     t.integer "point_limit"
     t.datetime "updated_at", null: false
