@@ -91,8 +91,35 @@ class DeckValidator # rubocop:disable Metrics/ClassLength
             # Validate against Restriction
             next if v.restriction_id.nil?
 
+            restriction = @restrictions[v.restriction_id]
             r = @unified_restrictions[v.restriction_id]
             Rails.logger.error "Restriction is #{r.inspect}"
+
+            # Check for deckbuilding restrictions (currently just the 3+ point agenda limit in startup).
+            if @deck['side_id'] == 'corp'
+              max_three_point_agendas = restriction.max_3_point_agendas
+              unless max_three_point_agendas.nil?
+                three_point_agendas = @deck['cards'].filter_map do |card_id, quantity|
+                  card = @cards[card_id]
+                  next unless card.card_type_id == 'agenda' && card.agenda_points.to_i >= 3
+
+                  [card_id, quantity]
+                end
+                agenda_count = three_point_agendas.sum { |_card_id, quantity| quantity }
+
+                if agenda_count > max_three_point_agendas
+                  v.add_error(
+                    format(
+                      'Startup Corp decks may not include more than %<limit>d agenda cards with a printed agenda point value of 3 or greater, but deck has %<count>d: %<cards>s.', # rubocop:disable Layout/LineLength
+                      limit: max_three_point_agendas,
+                      count: agenda_count,
+                      cards: three_point_agendas.map { |card_id, quantity| "#{card_id} (#{quantity})" }.join(', ')
+                    )
+                  )
+                  @validation_errors = true
+                end
+              end
+            end
 
             # Check for banned cards.
             ([@deck['identity_card_id']] + @deck['cards'].keys).each do |card_id|

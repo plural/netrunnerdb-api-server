@@ -14,6 +14,24 @@ eternal_points_list:
   created_at: <%= Time.utc(2022, 12, 8, 12, 0).to_fs(:db) %>
   updated_at: <%= Time.utc(2022, 12, 8, 12, 0).to_fs(:db) %>
 
+startup_banlist:
+  id: startup_banlist
+  name: "Startup Banlist"
+  format_id: "startup"
+  date_start: 2026-04-17
+  max_3_point_agendas: 4
+  created_at: <%= Time.utc(2022, 12, 8, 12, 0).to_fs(:db) %>
+  updated_at: <%= Time.utc(2022, 12, 8, 12, 0).to_fs(:db) %>
+
+startup_three_point_agenda_limit:
+  id: startup_three_point_agenda_limit
+  name: "Startup 3 Point Agenda Limit"
+  format_id: "startup"
+  date_start: 2026-03-03
+  max_3_point_agendas: 3
+  created_at: <%= Time.utc(2022, 12, 8, 12, 0).to_fs(:db) %>
+  updated_at: <%= Time.utc(2022, 12, 8, 12, 0).to_fs(:db) %>
+
 standard_restricted:
   id: standard_restricted
   name: "Standard Restricted List"

@@ -758,6 +758,7 @@ namespace :cards do
         name: m['name'],
         date_start: m['date_start'],
         point_limit: m['point_limit'],
+        max_3_point_agendas: m['max_3_point_agendas'],
         format_id: m['format_id']
       )
     end
