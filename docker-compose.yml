@@ -1,3 +1,11 @@
+# Define the logging configuration once
+x-logging: &default-logging
+  driver: "local"
+  options:
+    max-size: "100m"
+    max-file: "7"
+    compress: "true"
+
 services:
   # service configuration for our dockerized Rails app
 
@@ -5,6 +13,9 @@ services:
     restart: none
     image: registry.digitalocean.com/nsgcr/netrunner-cards-json:${JSON_DATA_VERSION:-latest}
     build: https://github.com/NetrunnerDB/netrunner-cards-json.git#main
+
+    logging: *default-logging
+
     volumes:
       - netrunner-cards-json:/mnt/netrunner-cards-json
 
@@ -14,6 +25,8 @@ services:
     image: registry.digitalocean.com/nsgcr/nrdb-api-server:${API_SERVER_VERSION:-latest}
     # build the Dockerfile next to this file, tag the built image with above image name
     build: .
+
+    logging: *default-logging
 
     networks:
       - backend
@@ -35,12 +48,14 @@ services:
     volumes:
       - ./config/database.yml:/var/www/nrdb-api/config/database.yml
       - netrunner-cards-json:/netrunner-cards-json
-      - nrdb-api-logs:/var/www/nrdb-api/log
+      - ./log:/var/www/nrdb-api/log
 
   # service configuration for our database
   db:
     restart: unless-stopped
     image: postgres:14.5-alpine
+
+    logging: *default-logging
 
     networks:
      - backend
@@ -58,6 +73,5 @@ networks:
     external: true
 
 volumes:
-  nrdb-api-logs:
   nrdb-api-postgres:
   netrunner-cards-json:
