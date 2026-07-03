@@ -56,6 +56,9 @@ gem 'opentelemetry-sdk'
 # for review imports from NRDBc
 gem 'reverse_markdown'
 
+# for structured JSON logging.
+gem 'rails_semantic_logger'
+
 group :development, :test do
   gem 'brakeman'
   # Lock to 8.0.3 because we don't have CSP middleware and the next version crashes without it.
