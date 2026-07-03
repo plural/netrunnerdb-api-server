@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_11_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_03_202747) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
 
   create_table "card_cycles", id: :string, force: :cascade do |t|
@@ -405,7 +406,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_120000) do
   add_foreign_key "cards_card_subtypes", "cards"
   add_foreign_key "decklists", "cards", column: "identity_card_id"
   add_foreign_key "decklists", "sides"
-  add_foreign_key "decklists", "users"
   add_foreign_key "decklists_cards", "cards"
   add_foreign_key "decklists_cards", "decklists"
   add_foreign_key "decks", "cards", column: "identity_card_id"
@@ -435,11 +435,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_120000) do
   add_foreign_key "restrictions_cards_universal_faction_cost", "cards"
   add_foreign_key "restrictions_cards_universal_faction_cost", "restrictions"
   add_foreign_key "review_comments", "reviews"
-  add_foreign_key "review_comments", "users"
   add_foreign_key "review_votes", "reviews"
-  add_foreign_key "review_votes", "users"
   add_foreign_key "reviews", "cards"
-  add_foreign_key "reviews", "users"
   add_foreign_key "rulings", "cards"
   add_foreign_key "snapshots", "card_pools"
   add_foreign_key "snapshots", "formats"
@@ -781,6 +778,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_120000) do
      FROM (unified u
        LEFT JOIN faces ON (((u.id)::text = (faces.card_id)::text)));
   SQL
+  add_index "unified_cards", ["card_type_id"], name: "index_unified_cards_on_card_type_id"
+  add_index "unified_cards", ["faction_id"], name: "index_unified_cards_on_faction_id"
+  add_index "unified_cards", ["id"], name: "index_unified_cards_on_id"
+  add_index "unified_cards", ["side_id"], name: "index_unified_cards_on_side_id"
+
   create_view "unified_printings", materialized: true, sql_definition: <<-SQL
       WITH card_cycles_summary AS (
            SELECT c.id,
@@ -1138,4 +1140,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_11_120000) do
        LEFT JOIN faces_for_printings pf ON (((u.id)::text = (pf.printing_id)::text)))
        LEFT JOIN faces_fallback ff ON (((u.id)::text = (ff.printing_id)::text)));
   SQL
+  add_index "unified_printings", ["card_cycle_id"], name: "index_unified_printings_on_card_cycle_id"
+  add_index "unified_printings", ["card_id"], name: "index_unified_printings_on_card_id"
+  add_index "unified_printings", ["card_set_id"], name: "index_unified_printings_on_card_set_id"
+  add_index "unified_printings", ["card_type_id"], name: "index_unified_printings_on_card_type_id"
+  add_index "unified_printings", ["faction_id"], name: "index_unified_printings_on_faction_id"
+  add_index "unified_printings", ["id"], name: "index_unified_printings_on_id"
+  add_index "unified_printings", ["side_id"], name: "index_unified_printings_on_side_id"
+
 end
