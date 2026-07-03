@@ -2,12 +2,6 @@
 
 class AddMissingForeignKeys < ActiveRecord::Migration[8.1]
   def change
-    # User constraints
-    add_foreign_key :decklists, :users
-    add_foreign_key :reviews, :users
-    add_foreign_key :review_comments, :users
-    add_foreign_key :review_votes, :users
-
     # card_faces constraints
     add_foreign_key :card_faces, :cards
 
