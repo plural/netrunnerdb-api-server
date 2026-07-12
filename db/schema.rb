@@ -10,10 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_03_202747) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_12_155354) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
-  enable_extension "pg_stat_statements"
   enable_extension "pgcrypto"
 
   create_table "card_cycles", id: :string, force: :cascade do |t|
@@ -1141,7 +1140,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_03_202747) do
        LEFT JOIN faces_fallback ff ON (((u.id)::text = (ff.printing_id)::text)));
   SQL
   add_index "unified_printings", ["card_cycle_id"], name: "index_unified_printings_on_card_cycle_id"
-  add_index "unified_printings", ["card_id"], name: "index_unified_printings_on_card_id"
   add_index "unified_printings", ["card_set_id"], name: "index_unified_printings_on_card_set_id"
   add_index "unified_printings", ["card_type_id"], name: "index_unified_printings_on_card_type_id"
   add_index "unified_printings", ["faction_id"], name: "index_unified_printings_on_faction_id"
