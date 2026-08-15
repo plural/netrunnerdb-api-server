@@ -5,8 +5,15 @@
     "dockerComposeFile": "docker-compose.yml",
     "service": "app",
     "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-    // Features to add to the
-    //  dev container. More info: https://containers.dev/features.
+
+    "containerEnv": {
+        "GEM_HOME": "/home/vscode/.bundle",
+        "GEM_PATH": "/home/vscode/.bundle:/usr/local/rvm/gems/default:/usr/local/rvm/gems/default@global",
+        "BUNDLE_PATH": "/home/vscode/.bundle",
+        "BUNDLE_APP_CONFIG": "/home/vscode/.bundle"
+    },
+
+    // Features to add to the dev container. More info: https://containers.dev/features.
     "features": {
         "ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {
             "packages": "libpq-dev, libvips, postgresql-client" // For postgres tooling
@@ -14,24 +21,24 @@
         "ghcr.io/devcontainers/features/git:1": {
             "version": "latest"
         },
-        "ghcr.io/devcontainers/features/ruby:1": {
-            "version": "3.4.4" // Change to match Ruby version from Gemfile
-        },
         "ghcr.io/devcontainers/features/node:1": {
             "version": 20 // Change Node version as required
         },
-        "ghcr.io/devcontainers/features/common-utils:2.4.3": {
+        "ghcr.io/devcontainers/features/common-utils:2.5.9": {
             "username": "vscode",
             "uid": 1000,
             "gid": 1000,
             "upgradePackages": true
         }
     },
+
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     // This can be used to network with other containers or the host.
     "forwardPorts": [3100, 5432],
+
     // Use 'postCreateCommand' to run commands after the container is created.
-    "postCreateCommand": "./bin/setup",
+    "postCreateCommand": "cp -n config/database.example.yml config/database.yml 2>/dev/null || true && bundle install && bundle exec rails db:prepare && RAILS_ENV=test bundle exec rails db:seed",
+
     // Configure tool-specific properties.
     "customizations": {
         "vscode": {
@@ -65,9 +72,8 @@
                 "rubyLsp.featuresConfiguration": {},
                 "rubyLsp.formatter": "auto",
                 "rubyLsp.rubyVersionManager": {
-                    "identifier": "auto"
+                    "identifier": "none"
                 },
-                "rubyLsp.rubyExecutablePath": "bundle exec ruby",
                 "rubyLsp.useBundler": true,
                 "rubyTestExplorer.debugCommand": "bundle exec rdebug-ide",
                 "rubyTestExplorer.testFramework": "rspec",
@@ -76,7 +82,7 @@
                         "name": "Rails Development Database",
                         "driver": "PostgreSQL",
                         "previewLimit": 50,
-                        "server": "db",
+                        "server": "localhost",
                         "port": 5432,
                         // Keep this updated to match config/database.yml
                         "database": "nrdb_api_development",
@@ -87,7 +93,7 @@
                         "name": "Rails Test Database",
                         "driver": "PostgreSQL",
                         "previewLimit": 50,
-                        "server": "db",
+                        "server": "localhost",
                         "port": 5432,
                         // Keep this updated to match config/database.yml
                         "database": "nrdb_api_test",
@@ -123,7 +129,5 @@
                 "waderyan.gitblame"
             ]
         }
-    },
-    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-    // "remoteUser": "root"
+    }
 }
