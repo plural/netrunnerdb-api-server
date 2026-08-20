@@ -184,13 +184,11 @@ namespace :cards do
       # leaving this vague to catch things that have and impose additional costs.
       new_card.additional_cost = true if new_card.text&.include?('As an additional cost to')
 
-      if new_card.text && (new_card.text.include?('When the Runner encounters this ice') || new_card.text.include?("When the Runner encounters #{new_card.title}}")) # rubocop:disable Layout/LineLength
-        new_card.on_encounter_effect = true
-      end
+      new_card.on_encounter_effect = true if new_card.text && (
+        new_card.text.include?('When the Runner encounters this ice') ||
+        new_card.text.include?("When the Runner encounters #{new_card.title}}"))
 
-      if new_card.text && (new_card.text.include?('When you rez') || new_card.text.include?("#{new_card.title} when it is rezzed")) # rubocop:disable Layout/LineLength
-        new_card.rez_effect = true
-      end
+      new_card.rez_effect = true if new_card.text && (new_card.text.include?('When you rez') || new_card.text.include?("#{new_card.title} when it is rezzed")) # rubocop:disable Layout/LineLength
 
       if new_card.text && (new_card.text.match?(/trace(\[\d+| X| \d+)/i) || new_card.text.match?('<trace>'))
         new_card.performs_trace = true
