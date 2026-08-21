@@ -7,6 +7,8 @@ services:
     volumes:
       - ../..:/workspaces:cached
       - ../../netrunner-cards-json:/netrunner-cards-json
+      - bundle-data:/home/vscode/.bundle
+      - command-history:/commandhistory
 
     # Overrides default command so things don't shut down after the process ends.
     command: sleep infinity
@@ -32,21 +34,14 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
       POSTGRES_PASSWORD: postgres
-      # Your config/database.yml should use the user and password you set here,
-      # and host "db" (as that's the name of this service). You can use whatever
-      # database name you want. Use `bin/rails db:prepare` to create the database.
-      #
-      # Example:
-      #
-      #  development:
-      #    <<: *default
-      #    host: db
-      #    username: postgres
-      #    password: postgres
-      #    database: myapp_development
-
-      # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
-      # (Adding the "ports" property to this file will not forward from a Codespace.)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres-data:
+  bundle-data:
+  command-history:
+
